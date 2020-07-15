@@ -1,0 +1,7 @@
+genDatasetCelebA:
+  is_show: True
+  path: 'data/'
+  input_shape: [128, 128]
+  test_split: 0.2
+  batch_size: 32
+  shuffle: True

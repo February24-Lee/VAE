@@ -1,0 +1,106 @@
+model_params:
+  name: 'VanillaVAE'
+  input_shape: [128, 128, 3]
+  latent_dim: 128
+  encoder_layers:
+    - name: 'Conv2D'
+      filters: 32
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Conv2D'
+      filters: 64
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Conv2D'
+      filters: 128
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Conv2D'
+      filters: 256
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Conv2D'
+      filters: 512
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Flatten'
+    - name: 'Dense'
+      units: 256
+
+  decoder_layers:
+    - name: 'Dense'
+      units: 8192
+    - name: 'Reshape'
+      target_shape: [4, 4, 512]
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 512
+      strides: [2,2]
+      padding: 'same'    
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 256
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 128
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 64
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'LeakyReLu'
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 32
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    - name: 'Conv2D'
+      filters: 3
+      kernel_size: 3
+      strides: [1,1]
+      padding: 'same'
+    - name: 'tanh'
+
+train_param:
+  epochs: 30
+  save_path: 'assets/'
+
+dataset_param:
+  path: 'data/'
+  input_shape: [128, 128]
+  test_split: 0.2
+  batch_size: 32
+  shuffle: True
+
+opt_param:
+  name: 'Adam'
+  LR: 0.00001
