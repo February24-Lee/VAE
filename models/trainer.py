@@ -36,12 +36,13 @@ def trainer(model,
         print('Calculating testset...')
         loss = tfk.metrics.Mean()
         for index, x in enumerate(test_x):
-            if index > test_iter:
-                break
             if scale == 'tanh':
                 x = (x-127.5)/127.5 
             elif scale == 'sigmoid':
                 x = x/255.
+
+            if index > test_iter:
+                break
             loss(model.compute_loss(x))
         elbo = -loss.result()
         print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
@@ -57,10 +58,11 @@ def save_images(model,
                 scale: str="sigmoid"):
     if scale == 'tanh':
         x = (x+1.)/2. 
-    plt.figure(figsize=(10,10))
     for i in range(img_num):
+        plt.figure(figsize=(10,10))
         plt.subplot(8,4,i+1)
         plt.imshow(x[i])
+        plt.axis('off')
     plt.savefig(path)
     return
 

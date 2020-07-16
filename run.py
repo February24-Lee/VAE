@@ -42,5 +42,4 @@ trainer(model,
 # --- save model
 if args.Is_save_model == 'true':
     path = config['train_param']['save_model_path'] + model.model_name +'.h5'
-    model.save(path)
-     
+    model.save_weights(path)
