@@ -12,6 +12,10 @@ parser.add_argument('--config', '-c',
                     metavar='FILE',
                     default=None)
 
+parser.add_argument('--save_model', '-s',
+                    dest="Is_save_model",
+                    default='true')
+
 args = parser.parse_args()
 with open(args.filename, 'r') as file:
     try :
@@ -31,4 +35,12 @@ trainer(model,
         test_gen, 
         tfk.optimizers.Adam(config['opt_param']['LR']),
         epochs=config['train_param']['epochs'],
-        save_path=config['train_param']['save_path'])
+        save_path=config['train_param']['save_path'],
+        scale=config['dataset_param']['scale'],
+        batch_size=config['dataset_param']['batch_size'])
+
+# --- save model
+if args.Is_save_model == 'true':
+    path = config['train_param']['save_model_path'] + model.model_name +'.h5'
+    model.save(path)
+     
