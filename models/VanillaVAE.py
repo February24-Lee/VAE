@@ -76,7 +76,7 @@ class VanillaVAE(BaseVAE):
         recons_loss = tfk.losses.MeanSquaredError()(x, x_reconstruct)
         kld_loss = tf.math.reduce_mean(-0.5 * tf.math.reduce_sum(1 + logvar - mean ** 2 - tf.math.exp(logvar), axis=1))
 
-        return recons_loss + kld_loss
+        return recons_loss + kld_loss * len(x)
     
     def forward(self, x) -> List[Tensor]:
         mu, logvar = self.encode(x)
