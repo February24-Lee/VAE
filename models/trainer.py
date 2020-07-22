@@ -47,8 +47,12 @@ def trainer(model,
         elbo = -loss.result()
         print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
         .format(epoch, elbo, end_time - start_t))
+
+        if len(x) is not batch_size:
+            x = next(test_x)
+
         path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
-        save_images(model, img_num=32, x=x, path=path, scale=scale)
+        save_images(model, img_num=batch_size, x=x, path=path, scale=scale)
     return 
 
 def save_images(model,
@@ -56,10 +60,10 @@ def save_images(model,
                 x: List[np.array]=None,
                 path: str=None,
                 scale: str="sigmoid"):
+    plt.figure(figsize=(10,10))
     if scale == 'tanh':
         x = (x+1.)/2. 
     for i in range(img_num):
-        plt.figure(figsize=(10,10))
         plt.subplot(8,4,i+1)
         plt.imshow(x[i])
         plt.axis('off')
