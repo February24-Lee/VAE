@@ -50,9 +50,9 @@ def trainer(model,
 
         if len(x) is not batch_size:
             x = next(test_x)
-
+        reconstruct_x, _, _ = model.forward(x)
         path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
-        save_images(model, img_num=batch_size, x=x, path=path, scale=scale)
+        save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale)
     return 
 
 def save_images(model,
