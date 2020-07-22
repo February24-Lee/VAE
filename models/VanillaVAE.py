@@ -79,7 +79,7 @@ class VanillaVAE(BaseVAE):
 
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logits, labels=x)
 
-        logpx_z = -tf.reduce_sum(cross_ent, aaxis=[1,2,3])
+        logpx_z = -tf.reduce_sum(cross_ent, axis=[1,2,3])
         logpz = log_normal_pdf(z, 0., 0.)
         logqz_x = log_normal_pdf(z, mean, logvar)
 
