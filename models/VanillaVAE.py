@@ -64,7 +64,7 @@ class VanillaVAE(BaseVAE):
     def sample(self, sample_num: int =100, eps=None):
         if eps is None:
             eps = tf.random.normal(shape=(sample_num, self.latent_dim ))
-        return self.decode(eps)
+        return tf.nn.sigmoid(self.decode(eps))
 
 
     def reparameterize(self, mean, logvar):
