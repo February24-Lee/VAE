@@ -54,9 +54,11 @@ class VanillaVAE(BaseVAE):
         mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
         return mean, logvar
 
+
     def decode(self, z):
         logits = self.decoder(z)
         return logits
+
 
     @tf.function
     def sample(self, sample_num: int =100, eps=None):
@@ -64,10 +66,13 @@ class VanillaVAE(BaseVAE):
             eps = tf.random.normal(shape=(sample_num, self.latent_dim ))
         return self.decode(eps)
 
+
     def reparameterize(self, mean, logvar):
         eps = tf.random.normal(shape=mean.shape)
         return eps*tf.exp(logvar * .5) + mean
 
+
+'''
     def compute_loss(self, x):
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
@@ -77,7 +82,22 @@ class VanillaVAE(BaseVAE):
         kld_loss = tf.math.reduce_mean(-0.5 * tf.math.reduce_sum(1 + logvar - mean ** 2 - tf.math.exp(logvar), axis=1))
 
         return recons_loss + kld_loss * len(x)
-    
+'''
+
+    def compute_loss(self, x):
+        mean, logvar = self.encode(x)
+        z = self.reparameterize(mean, logvar)
+        x_reconstruct = self.decode(z)
+
+        recons_loss = tfk.losses.MeanSquaredError()(x, x_reconstruct)
+
+        logpz = log_normal_pdf(z, 0., 0.)
+        logqz_x = log_normal_pdf(z, mean, logvar)
+        kld_loss = -tf.reduce_mean(logpz - logqz_x)
+
+        return recons_loss + kld_loss
+
+
     def forward(self, x) -> List[Tensor]:
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
