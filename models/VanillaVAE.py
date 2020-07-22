@@ -75,15 +75,15 @@ class VanillaVAE(BaseVAE):
     def compute_loss(self, x):
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
-        x_reconstruct = self.decode(z)
+        x_logits = self.decode(z)
 
-        recons_loss = tfk.losses.MeanSquaredError()(x, x_reconstruct)
+        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logits, labels=x)
 
+        logpx_z = -tf.reduce_sum(cross_ent, aaxis=[1,2,3])
         logpz = log_normal_pdf(z, 0., 0.)
         logqz_x = log_normal_pdf(z, mean, logvar)
-        kld_loss = -tf.reduce_mean(logpz - logqz_x)
 
-        return recons_loss + kld_loss
+        return -tf.reduce_mean(logpx_z + logpz - logqz_x)
 
 
     def forward(self, x) -> List[Tensor]:
