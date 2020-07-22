@@ -72,18 +72,6 @@ class VanillaVAE(BaseVAE):
         return eps*tf.exp(logvar * .5) + mean
 
 
-'''
-    def compute_loss(self, x):
-        mean, logvar = self.encode(x)
-        z = self.reparameterize(mean, logvar)
-        x_reconstruct = self.decode(z)
-
-        recons_loss = tfk.losses.MeanSquaredError()(x, x_reconstruct)
-        kld_loss = tf.math.reduce_mean(-0.5 * tf.math.reduce_sum(1 + logvar - mean ** 2 - tf.math.exp(logvar), axis=1))
-
-        return recons_loss + kld_loss * len(x)
-'''
-
     def compute_loss(self, x):
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
