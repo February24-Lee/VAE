@@ -106,4 +106,4 @@ dataset_param:
   
 opt_param:
   name: 'Adam'
-  LR: 0.0001
+  LR: 0.00001
