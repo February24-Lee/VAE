@@ -1,4 +1,4 @@
-typefrom .types_ import *
+from .types_ import *
 from abc import abstractclassmethod
 import tensorflow as tf
 
