@@ -74,7 +74,7 @@ class VanillaVAE(BaseVAE):
         x_reconstruct = self.decode(z)
 
         recons_loss = tfk.losses.MeanSquaredError()(x, x_reconstruct)
-        kld_loss = tf.math.reduce_mean(-0.5 * tf.math.reduce_sum(1 + logvar - mu ** 2 - tf.math.exp(log_normal_pdf), axis=1))
+        kld_loss = tf.math.reduce_mean(-0.5 * tf.math.reduce_sum(1 + logvar - mean ** 2 - tf.math.exp(log_normal_pdf), axis=1))
 
         return recons_loss + kld_loss
     
