@@ -88,7 +88,6 @@ model_params:
       kernel_size: 3
       strides: [1,1]
       padding: 'same'
-    - name: 'tanh'
 
 train_param:
   epochs: 50
@@ -102,9 +101,9 @@ dataset_param:
   test_split: 0.2
   batch_size: 32
   shuffle: True
-  scale: 'tanh'
+  scale: 'sigmoid'
 
   
 opt_param:
   name: 'Adam'
-  LR: 0.005
+  LR: 0.0001
