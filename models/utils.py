@@ -27,4 +27,3 @@ def makeLayers(layer_spec: dict) -> Layer:
     else :
         print('there is no layer : {}'.format(layer_spec['name']) )
         return False
-
