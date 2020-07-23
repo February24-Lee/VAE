@@ -22,3 +22,7 @@ Dong Hyeook Lee
 :---: | :---: |
 **Vanilla VAE** | 
 **VQ-VAE** |  
+**CVAE* |
+**Beta-VAE**|
+**IWAE**|
+
