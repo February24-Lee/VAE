@@ -93,6 +93,10 @@ train_param:
   epochs: 30
   save_path: 'assets/'
   save_model_path: 'save/'
+  save_iter: 10
+  check_point_path: 'checkpoint/'
+  check_point_iter: 5
+  log_dir: 'logs/'
 
 dataset_param:
   path: 'data/'

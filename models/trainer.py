@@ -2,6 +2,7 @@ import time
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime as dt
 from tqdm import tqdm
 from .types_ import *
 
@@ -14,13 +15,26 @@ def trainer(model,
             opt=tfk.optimizers.Adam(1e-4),
             epochs=10,
             save_path: str=None,
+            save_iter: int=10,
             scale='sigmoid',
-            batch_size:int =32):
+            batch_size:int =32,
+            check_point_path:str = 'checkpoint/',
+            check_point_iter:int = 5,
+            log_dir:str = 'logs/'):
 
     train_iter = train_x.n // batch_size
     test_iter = test_x.n // batch_size
 
+    # --- for log save
+    current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    train_log_dir = log_dir + current_time + '/train'
+    test_log_dir = log_dir + current_time + '/test'
+    train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+    test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+
+
     for epoch in range(1, epochs+1):
+        # --- Train
         start_t = time.time()
         print('Epoch : {} training..'.format(epoch))
         for index, x in enumerate(tqdm(train_x)):
@@ -33,6 +47,23 @@ def trainer(model,
             model.train_step(x, opt=opt)
         end_time = time.time()
 
+        #  --- Calculate Trainset Loss
+        loss = tfk.metrics.Mean()
+        for index, x in enumerate(train_x):
+            if scale == 'tanh':
+                x = (x-127.5)/127.5 
+            elif scale == 'sigmoid':
+                x = x/255.
+
+            if index > test_iter:
+                break
+            loss(model.compute_loss(x))
+        loss = loss.result()
+        print('Epoch: {}, train set loss: {}'.format(epoch, loss))
+        with train_summary_writer.as_default():
+            tf.summary.scalar('loss', loss, step=epoch)
+
+        # --- Calculate Testset Loss
         print('Calculating testset...')
         loss = tfk.metrics.Mean()
         for index, x in enumerate(test_x):
@@ -44,15 +75,25 @@ def trainer(model,
             if index > test_iter:
                 break
             loss(model.compute_loss(x))
-        elbo = -loss.result()
-        print('Epoch: {}, Test set ELBO: {}, time elapse for current epoch: {}'
-        .format(epoch, elbo, end_time - start_t))
+        loss = loss.result()
+        print('Epoch: {}, Test set loss: {}'.format(epoch, loss))
+        with test_summary_writer.as_default():
+            tf.summary.scalar('loss', loss, step=epoch)
 
-        if len(x) is not batch_size:
-            x = next(test_x)
-        reconstruct_x, _, _ = model.forward(x)
-        path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
-        save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale)
+        # --- save image
+        if epoch % save_iter == 0 :
+            if len(x) is not batch_size:
+                x = next(test_x)
+            reconstruct_x, _, _ = model.forward(x)
+            path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
+            save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale)
+
+
+        # --- check point sace
+        if epoch % check_point_iter == 0 :
+            path = check_point_path + model.model_name +'_checkpoint_{}'.format(epoch)
+            model.save_weights(path)
+
     return 
 
 def save_images(model,

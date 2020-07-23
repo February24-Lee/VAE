@@ -1,0 +1,2 @@
+model_checkpoint_path: "VanillaVAE_checkpoint_50"
+all_model_checkpoint_paths: "VanillaVAE_checkpoint_50"
