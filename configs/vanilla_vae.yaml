@@ -101,7 +101,7 @@ train_param:
   log_dir: 'logs/'
 
 dataset_param:
-  path: 'data/'
+  path: 'data/celeba'
   input_shape: [128, 128]
   test_split: 0.2
   batch_size: 32
