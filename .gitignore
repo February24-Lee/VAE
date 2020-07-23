@@ -1,5 +1,9 @@
 data/
 
+checkpoint/
+
+assets/
+
 *.ipynb
 
 .vscode

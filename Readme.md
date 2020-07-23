@@ -18,11 +18,11 @@ Dong Hyeook Lee
 ## Variational AutoEncoders (VAEs)
 ### LIST
 
-*Name | *Paper Link 
+*Name* | *Paper Link*
 :---: | :---: |
 **Vanilla VAE** | 
 **VQ-VAE** |  
-**CVAE* |
+**CVAE** |
 **Beta-VAE**|
 **IWAE**|
 

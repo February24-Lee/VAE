@@ -2,17 +2,12 @@ import tensorflow as tf
 import numpy as np
 
 from .BaseVAE import BaseVAE
-from .utils import makeLayers
+from .utils import makeLayers, log_normal_pdf
 from .types_ import *
 
 tfk = tf.keras
 tfkl = tf.keras.layers
 
-def log_normal_pdf(sample, mean, logvar, raxis=1):
-    log2pi = tf.math.log(2. * np.pi)
-    return tf.reduce_sum(
-        -.5*((sample-mean)**2.*tf.exp(-logvar)+logvar+log2pi), axis=raxis
-    )
 
 class VanillaVAE(BaseVAE):
     def __init__(self, 
@@ -56,15 +51,15 @@ class VanillaVAE(BaseVAE):
 
 
     def decode(self, z):
-        logits = self.decoder(z)
-        return logits
+        x = self.decoder(z)
+        return x
 
 
     @tf.function
     def sample(self, sample_num: int =100, eps=None):
         if eps is None:
             eps = tf.random.normal(shape=(sample_num, self.latent_dim ))
-        return tf.nn.sigmoid(self.decode(eps))
+        return self.decode(eps)
 
 
     def reparameterize(self, mean, logvar):
@@ -75,21 +70,22 @@ class VanillaVAE(BaseVAE):
     def compute_loss(self, x):
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
-        x_logits = self.decode(z)
+        reconstruct_x = self.decode(z)
+        
+        # BCE loss
+        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=reconstruct_x, labels=x)
+        rec_loss = tf.reduce_sum(cross_ent, axis=[1,2,3])
 
-        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logits, labels=x)
+        # KL loss
+        kl_loss = -0.5 * tf.reduce_sum((1 + logvar - mean**2 - tf.math.exp(logvar)), axis=1)
 
-        logpx_z = -tf.reduce_sum(cross_ent, axis=[1,2,3])
-        logpz = log_normal_pdf(z, 0., 0.)
-        logqz_x = log_normal_pdf(z, mean, logvar)
-
-        return -tf.reduce_mean(logpx_z + logpz - logqz_x)
+        return tf.reduce_mean(rec_loss + kl_loss)
 
 
     def forward(self, x) -> List[Tensor]:
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
-        return [tf.nn.sigmoid(self.decoder(z)), mu, logvar]
+        return self.decoder(z), mu, logvar
 
     def generate(self, x):
         return self.forward(x)

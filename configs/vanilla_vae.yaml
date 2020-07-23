@@ -88,12 +88,14 @@ model_params:
       kernel_size: 3
       strides: [1,1]
       padding: 'same'
+      activation: 'sigmoid'
+
 
 train_param:
-  epochs: 30
+  epochs: 50
   save_path: 'assets/'
   save_model_path: 'save/'
-  save_iter: 10
+  save_iter: 5
   check_point_path: 'checkpoint/'
   check_point_iter: 5
   log_dir: 'logs/'
