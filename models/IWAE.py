@@ -88,7 +88,7 @@ class IWAE(BaseVAE):
 
         # B x S x H x W x C
         rec_x = tf.reshape(rec_x, shape=(B_size, -1, *tf.shape(rec_x).numpy()[1:]))
-        repeat_x = tf.repeat(x, [self.sample_num]*len(mean), axis=0)
+        repeat_x = tf.repeat(x, [self.sample_num]*len(x), axis=0)
         repeat_x = tf.reshape(repeat_x, shape=(B_size, -1, *tf.shape(repeat_x).numpy()[1:]))
 
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=rec_x, labels=repeat_x)

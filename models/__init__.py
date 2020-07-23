@@ -6,6 +6,7 @@ from .VanillaVAE import *
 from .trainer import *
 from .IWAE import *
 
+
 VAE = VanillaVAE
 
 vae_models = {
