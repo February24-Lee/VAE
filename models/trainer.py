@@ -2,6 +2,7 @@ import time
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
+import datetime as dt
 from tqdm import tqdm
 from .types_ import *
 
@@ -18,10 +19,19 @@ def trainer(model,
             scale='sigmoid',
             batch_size:int =32,
             check_point_path:str = 'checkpoint/',
-            check_point_iter:int = 5):
+            check_point_iter:int = 5,
+            log_dir:str = 'logs/'):
 
     train_iter = train_x.n // batch_size
     test_iter = test_x.n // batch_size
+
+    # --- for log save
+    current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    train_log_dir = log_dir + current_time + '/train'
+    test_log_dir = log_dir + current_time + '/test'
+    train_summary_writer = tf.summary.create_file_writer(train_log_dir)
+    test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+
 
     for epoch in range(1, epochs+1):
         # --- Train
@@ -50,6 +60,8 @@ def trainer(model,
             loss(model.compute_loss(x))
         loss = loss.result()
         print('Epoch: {}, train set loss: {}'.format(epoch, loss))
+        with train_summary_writer.as_default():
+            tf.summary.scalar('loss', loss, step=epoch)
 
         # --- Calculate Testset Loss
         print('Calculating testset...')
@@ -65,6 +77,8 @@ def trainer(model,
             loss(model.compute_loss(x))
         loss = loss.result()
         print('Epoch: {}, Test set loss: {}'.format(epoch, loss))
+        with test_summary_writer.as_default():
+            tf.summary.scalar('loss', loss, step=epoch)
 
         # --- save image
         if epoch % save_iter == 0 :
