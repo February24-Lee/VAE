@@ -90,7 +90,7 @@ model_params:
       padding: 'same'
 
 train_param:
-  epochs: 50
+  epochs: 50000
   save_path: 'assets/satellite/'
   save_model_path: 'save/'
 
