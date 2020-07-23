@@ -54,8 +54,8 @@ class IWAE(BaseVAE):
 
 
     def decode(self, z):
-        logits = self.decoder(z)
-        return logits
+        x = self.decoder(z)
+        return x
 
 
     @tf.function
@@ -71,38 +71,51 @@ class IWAE(BaseVAE):
 
 
     def compute_loss(self, x):
+        # B size
+        B_size = len(x)
+
         # B x D
         mean, logvar = self.encode(x)
 
-        # BS X D
-        mu = tf.repeat(mu, [self.sample_num]*len(mu), axis=0) 
-        logvar = tf.repeat(logvar, [self.sample_num]*len(mu), axis=0)
+        # BS x D
+        mean = tf.repeat(mean, [self.sample_num]*len(mean), axis=0) 
+        logvar = tf.repeat(logvar, [self.sample_num]*len(logvar), axis=0)
         z = self.reparameterize(mean, logvar)
-        x_logits = self.decode(z)
 
         # BS x H x W x C
-        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_logits, labels=x)
+        rec_x = self.decode(z)
 
-        # BS
-        logpx_z = -tf.reduce_sum(cross_ent, axis=[1,2,3]) 
-        logpz = log_normal_pdf(z, 0., 0.)
-        logqz_x = log_normal_pdf(z, mean, logvar)
 
-        return -tf.reduce_mean(logpx_z + logpz - logqz_x)
+        # B x S x H x W x C
+        rec_x = tf.reshape(rec_x, shape=(B_size, -1, *tf.shape(rec_x).numpy()[1:]))
+        repeat_x = tf.repeat(x, [self.sample_num]*len(mean), axis=0)
+        repeat_x = tf.reshape(repeat_x, shape=(B_size, -1, *tf.shape(repeat_x).numpy()[1:]))
+
+        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=rec_x, labels=repeat_x)
+        rec_loss = tf.reduce_sum(cross_ent, axis=[2,3,4]) # B x S
+
+        kl_loss = -0.5 * tf.reduce_sum((1 + logvar - mean**2 - tf.math.exp(logvar)), axis=1) # BS
+        kl_loss = tf.reshape(kl_loss, shape=(B_size, -1)) # B x S
+
+        loss = rec_loss + kl_loss # B x S
+        loss_weight = tf.math.softmax(loss, axis=1)
+        
+        return tf.reduce_mean(tf.reduce_sum(loss_weight*loss, axis=-1), axis=0)
 
 
     def forward(self, x) -> List[Tensor]:
+        # B size
+        B_size = len(x)
+
         # B x D
-        mu, logvar = self.encode(x) 
+        mean, logvar = self.encode(x) 
 
         # BS X D
-        mu = tf.repeat(mu, [self.sample_num]*len(mu), axis=0) 
-        logvar = tf.repeat(logvar, [self.sample_num]*len(mu), axis=0)
+        mean = tf.repeat(mean, [self.sample_num]*len(mean), axis=0) 
+        logvar = tf.repeat(logvar, [self.sample_num]*len(logvar), axis=0)
+        z = self.reparameterize(logvar, logvar)
 
-        # BS x D
-        z = self.reparameterize(mu, logvar)
-
-        return [tf.nn.sigmoid(self.decoder(z)), mu, logvar]
+        return [self.decode(z), mean, logvar]
 
     def generate(self, x):
         return self.forward(x)
