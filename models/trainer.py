@@ -64,7 +64,6 @@ def trainer(model,
             tf.summary.scalar('loss', loss, step=epoch)
 
         # --- Calculate Testset Loss
-        print('Calculating testset...')
         loss = tfk.metrics.Mean()
         for index, x in enumerate(test_x):
             if scale == 'tanh':

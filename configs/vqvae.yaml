@@ -1,0 +1,103 @@
+model_params:
+  name: 'VQVAE'
+  input_shape: [128, 128, 3]
+  latent_dim: 128
+  num_embeddings: 512
+  beta: 0.25
+
+  encoder_layers:
+    - name: 'Conv2D'
+      filters: 32
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      filters: 64
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      filters: 128
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      filters: 256
+      kernel_size: 3
+      strides: [1,1]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+   
+    - name: 'Conv2D'
+      filters: 128
+      kernel_size: 1
+      strides: [1,1]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+    
+  decoder_layers:
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 256
+      strides: [2,2]
+      padding: 'same'    
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 128
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 64
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 32
+      strides: [1,1]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      kernel_size: 3
+      filters: 3
+      strides: [1,1]
+      padding: 'same'
+      
+train_param:
+  epochs: 50
+  save_path: 'assets/VQVAE'
+  save_model_path: 'save/VQVAE'
+  save_iter: 5
+  check_point_path: 'checkpoint/VQVAE'
+  check_point_iter: 5
+  log_dir: 'logs/'
+
+dataset_param:
+  path: 'data/celeba'
+  input_shape: [128, 128]
+  test_split: 0.2
+  batch_size: 32
+  shuffle: True
+  scale: 'sigmoid'

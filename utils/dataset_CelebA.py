@@ -10,6 +10,7 @@ def genDatasetCelebA(path : str = None,
                     test_split : float = 0.2,
                     batch_szie : int = 32,
                     shuffle : bool = True,
+                    color_mode: str = 'rgb',
                     **kwargs):
     # you should input shpae except channel
     if len(input_shape) == 3 :
@@ -20,12 +21,14 @@ def genDatasetCelebA(path : str = None,
     datagen = tfk.preprocessing.image.ImageDataGenerator(validation_split=test_split)
     train_gen = datagen.flow_from_directory(path,
                                             target_size=input_shape,
+                                            color_mode= color_mode,
                                             class_mode=None,
                                             batch_size=batch_szie,
                                             shuffle=shuffle,
                                             subset='training')
     test_gen = datagen.flow_from_directory(path,
                                             target_size=input_shape,
+                                            color_mode=color_mode,
                                             class_mode=None,
                                             batch_size=batch_szie,
                                             shuffle=shuffle,

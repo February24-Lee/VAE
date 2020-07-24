@@ -75,7 +75,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
-    - name: 'LeakyReLu'
+
     - name: 'Conv2DTranspose'
       kernel_size: 3
       filters: 32
@@ -92,7 +92,7 @@ model_params:
 
 
 train_param:
-  epochs: 50
+  epochs: 150
   save_path: 'assets/'
   save_model_path: 'save/'
   save_iter: 5
