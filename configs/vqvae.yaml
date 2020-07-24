@@ -86,7 +86,8 @@ model_params:
       padding: 'same'
       
 train_param:
-  epochs: 50
+  check_loss_cnt: 5
+  epochs: 150
   save_path: 'assets/VQVAE'
   save_model_path: 'save/VQVAE'
   save_iter: 5
@@ -101,3 +102,7 @@ dataset_param:
   batch_size: 32
   shuffle: True
   scale: 'sigmoid'
+
+opt_param:
+  name: 'Adam'
+  LR: 0.001
