@@ -41,7 +41,8 @@ trainer(model,
         batch_size=config['dataset_param']['batch_size'],
         check_point_iter=config['train_param']['check_point_iter'],
         check_point_path=config['train_param']['check_point_path'],
-        log_dir=config['train_param']['log_dir'])
+        log_dir=config['train_param']['log_dir'],
+        check_loss_cnt=config['train_param']['check_loss_cnt'])
 
 # --- save model
 if args.Is_save_model == 'true':

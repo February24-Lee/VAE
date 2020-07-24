@@ -26,7 +26,7 @@ class BaseVAE(tfk.Model):
         pass
 
     @abstractclassmethod
-    def compute_loss(self, input: Tensor, **kwargs) -> Tensor:
+    def compute_loss(self, input: Tensor, **kwargs) -> dict:
         pass
 
     @abstractclassmethod

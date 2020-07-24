@@ -67,7 +67,7 @@ class VanillaVAE(BaseVAE):
         return eps*tf.exp(logvar * .5) + mean
 
 
-    def compute_loss(self, x):
+    def compute_loss(self, x) -> dict:
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
         reconstruct_x = self.decode(z)
@@ -79,7 +79,7 @@ class VanillaVAE(BaseVAE):
         # KL loss
         kl_loss = -0.5 * tf.reduce_sum((1 + logvar - mean**2 - tf.math.exp(logvar)), axis=1)
 
-        return tf.reduce_mean(rec_loss + kl_loss)
+        return {'total_loss': tf.reduce_mean(rec_loss + kl_loss), 'rec_loss' : rec_loss, 'kl_loss' : kl_loss}
 
 
     def forward(self, x) -> List[Tensor]:
@@ -93,7 +93,7 @@ class VanillaVAE(BaseVAE):
     @tf.function
     def train_step(self, x, opt=tfk.optimizers.Adam(1e-4)):
         with tf.GradientTape() as tape:
-            loss = self.compute_loss(x)
+            loss = self.compute_loss(x)['total_loss']
         gradients = tape.gradient(loss, self.trainable_variables)
         opt.apply_gradients(zip(gradients, self.trainable_variables))
         return 

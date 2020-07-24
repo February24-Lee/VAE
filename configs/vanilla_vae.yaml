@@ -92,6 +92,7 @@ model_params:
 
 
 train_param:
+  check_loss_cnt: 3
   epochs: 150
   save_path: 'assets/'
   save_model_path: 'save/'

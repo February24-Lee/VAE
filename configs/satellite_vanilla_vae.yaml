@@ -98,6 +98,7 @@ model_params:
       activation: 'sigmoid'
 
 train_param:
+  check_loss_cnt: 3
   epochs: 1000
   save_path: 'assets/satellite/'
   save_model_path: 'save/'
@@ -107,7 +108,7 @@ train_param:
   log_dir: 'logs/'
 
 dataset_param:
-  path: 'data/satellite/jpg_d10'
+  path: 'data/satellite/'
   input_shape: [128, 128]
   color_mode: 'grayscale'
   test_split: 0.2
@@ -118,4 +119,4 @@ dataset_param:
   
 opt_param:
   name: 'Adam'
-  LR: 0.0001
+  LR: 0.001

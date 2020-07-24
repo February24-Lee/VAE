@@ -20,7 +20,8 @@ def trainer(model,
             batch_size:int =32,
             check_point_path:str = 'checkpoint/',
             check_point_iter:int = 5,
-            log_dir:str = 'logs/'):
+            log_dir:str = 'logs/',
+            check_loss_cnt:int = 1):
 
     train_iter = train_x.n // batch_size
     test_iter = test_x.n // batch_size
@@ -32,6 +33,8 @@ def trainer(model,
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
 
+    # --- make logs for loss functions
+    loss_list = [tfk.metrics.Mean() for _ in range(check_loss_cnt)]
 
     for epoch in range(1, epochs+1):
         # --- Train
@@ -48,7 +51,6 @@ def trainer(model,
         end_time = time.time()
 
         #  --- Calculate Trainset Loss
-        loss = tfk.metrics.Mean()
         for index, x in enumerate(train_x):
             if scale == 'tanh':
                 x = (x-127.5)/127.5 
@@ -57,14 +59,17 @@ def trainer(model,
 
             if index > test_iter:
                 break
-            loss(model.compute_loss(x))
-        loss = loss.result()
+            loss_dic = model.compute_loss(x)
+            for i, (_, value) in enumerate(loss_dic.items()):
+                loss_list[i](value)
+        loss = loss_list[0].result()
         print('Epoch: {}, train set loss: {}'.format(epoch, loss))
         with train_summary_writer.as_default():
-            tf.summary.scalar('loss', loss, step=epoch)
+            for index, loss_name in enumerate(loss_dic):
+                tf.summary.scalar(loss_name, loss_list[index].result(), step=epoch)
+                loss_list[index].reset_states()
 
         # --- Calculate Testset Loss
-        loss = tfk.metrics.Mean()
         for index, x in enumerate(test_x):
             if scale == 'tanh':
                 x = (x-127.5)/127.5 
@@ -73,18 +78,26 @@ def trainer(model,
 
             if index > test_iter:
                 break
-            loss(model.compute_loss(x))
-        loss = loss.result()
+            loss_dic = model.compute_loss(x)
+            for i, (_, value) in enumerate(loss_dic.items()):
+                loss_list[i](value)
+        loss = loss_list[0].result()
+        print('Epoch: {}, train set loss: {}'.format(epoch, loss))
         print('Epoch: {}, Test set loss: {}'.format(epoch, loss))
         with test_summary_writer.as_default():
-            tf.summary.scalar('loss', loss, step=epoch)
+            for index, loss_name in enumerate(loss_dic):
+                tf.summary.scalar(loss_name, loss_list[index].result(), step=epoch)
+                loss_list[index].reset_states()
 
         # --- save image
         if epoch % save_iter == 0 :
             if len(x) is not batch_size:
                 x = next(test_x)
             reconstruct_x, _, _ = model.forward(x)
-
+            # --- for gray_scale case
+            if tf.shape(reconstruct_x)[-1] ==1:
+                reconstruct_x = tf.reshape(reconstruct_x, tf.shape(reconstruct_x)[:-1])
+                
             path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
             save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale)
 
