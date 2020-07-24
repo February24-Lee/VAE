@@ -90,24 +90,29 @@ class VQVAE(BaseVAE):
     def decode(self, z:Tensor) -> Tensor:
         return self.decoder(z)
 
-
+    @tf.function
     def compute_loss(self, x):
         z = self.encoder(x)
         quantized_z = self.vq(z)
+
+        #Embedding_loss
+        embedding_loss = tf.nn.l2_loss(tf.stop_gradient(z)-quantized_z)
+
+        #Commitment_loss
+        commitment_loss = tf.nn.l2_loss(z-tf.stop_gradient(quantized_z))
+
+        # Residue back for update
+        quantized_z = z + tf.stop_gradient(quantized_z - z)
+
         recon_x = self.decode(quantized_z)
 
         #Reconstruct loss
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=recon_x, labels=x)
         recon_loss = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1,2,3]))
 
-        #Embedding_loss
-        embedding_loss = tfk.metrics.MeanSquaredError()(tf.stop_gradient(z),quantized_z)
-
-        #Commitment_loss
-        commitment_loss = tfk.metrics.MeanSquaredError()(z,tf.stop_gradient(quantized_z))
-
         #Total_loss
         total_loss = recon_loss + embedding_loss + self.beta * commitment_loss
+
 
         return {'total_loss':total_loss,
                 'rec_loss':recon_loss,
