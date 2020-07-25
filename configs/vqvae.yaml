@@ -86,7 +86,7 @@ model_params:
       padding: 'same'
       
 train_param:
-  check_loss_cnt: 5
+  check_loss_cnt: 4
   epochs: 150
   save_path: 'assets/VQVAE'
   save_model_path: 'save/VQVAE'

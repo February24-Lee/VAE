@@ -85,7 +85,7 @@ class VanillaVAE(BaseVAE):
     def forward(self, x) -> List[Tensor]:
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
-        return self.decoder(z), mu, logvar
+        return self.decoder(z)
 
     def generate(self, x):
         return self.forward(x)
