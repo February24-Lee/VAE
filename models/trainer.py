@@ -93,7 +93,7 @@ def trainer(model,
         if epoch % save_iter == 0 :
             if len(x) is not batch_size:
                 x = next(test_x)
-            reconstruct_x, _, _ = model.forward(x)
+            reconstruct_x = model.forward(x)
             # --- for gray_scale case
             if tf.shape(reconstruct_x)[-1] ==1:
                 reconstruct_x = tf.reshape(reconstruct_x, tf.shape(reconstruct_x)[:-1])
