@@ -50,8 +50,10 @@ class VanillaVAE(BaseVAE):
         return mean, logvar
 
 
-    def decode(self, z):
+    def decode(self, z, apply_sigmoid=False):
         x = self.decoder(z)
+        if apply_sigmoid :
+            x = tf.nn.sigmoid(x)
         return x
 
 
@@ -85,7 +87,7 @@ class VanillaVAE(BaseVAE):
     def forward(self, x) -> List[Tensor]:
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
-        return self.decoder(z)
+        return self.decoder(z, apply_sigmoid=True)
 
     def generate(self, x):
         return self.forward(x)

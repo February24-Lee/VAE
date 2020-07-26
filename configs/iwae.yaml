@@ -12,6 +12,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2D'
       filters: 64
       kernel_size: 3
@@ -19,6 +20,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2D'
       filters: 128
       kernel_size: 3
@@ -26,6 +28,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2D'
       filters: 256
       kernel_size: 3
@@ -33,6 +36,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2D'
       filters: 512
       kernel_size: 3
@@ -40,6 +44,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Flatten'
     - name: 'Dense'
       units: 256
@@ -56,6 +61,7 @@ model_params:
       padding: 'same'    
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2DTranspose'
       kernel_size: 3
       filters: 256
@@ -63,6 +69,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2DTranspose'
       kernel_size: 3
       filters: 128
@@ -70,6 +77,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2DTranspose'
       kernel_size: 3
       filters: 64
@@ -77,7 +85,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
-    - name: 'LeakyReLu'
+
     - name: 'Conv2DTranspose'
       kernel_size: 3
       filters: 32
@@ -85,15 +93,16 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2D'
       filters: 3
       kernel_size: 3
       strides: [1,1]
       padding: 'same'
-      activation: 'sigmoid'
 
 train_param:
-  epochs: 50
+  check_loss_cnt: 3
+  epochs: 100
   save_path: 'assets/IWAE'
   save_model_path: 'save/IWAE'
   save_iter: 5
@@ -111,4 +120,4 @@ dataset_param:
 
 opt_param:
   name: 'Adam'
-  LR: 0.00001
+  LR: 0.0001

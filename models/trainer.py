@@ -82,7 +82,6 @@ def trainer(model,
             for i, (_, value) in enumerate(loss_dic.items()):
                 loss_list[i](value)
         loss = loss_list[0].result()
-        print('Epoch: {}, train set loss: {}'.format(epoch, loss))
         print('Epoch: {}, Test set loss: {}'.format(epoch, loss))
         with test_summary_writer.as_default():
             for index, loss_name in enumerate(loss_dic):

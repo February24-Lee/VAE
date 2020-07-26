@@ -24,6 +24,7 @@ class IWAE(BaseVAE):
         self.model_name = 'IWAE'
         self.latent_dim = latent_dim
         self.sample_num = sample_num
+        self.img_shape = input_shape
 
         # --- Encoder
         encoder_input = tfkl.Input(shape=input_shape)
@@ -53,8 +54,10 @@ class IWAE(BaseVAE):
         return mean, logvar
 
 
-    def decode(self, z):
+    def decode(self, z, apply_sigmoid=False) -> Tensor:
         x = self.decoder(z)
+        if apply_sigmoid :
+            x = tf.nn.sigmoid(x)
         return x
 
 
@@ -62,13 +65,14 @@ class IWAE(BaseVAE):
     def sample(self, sample_num: int =1, eps=None):
         if eps is None:
             eps = tf.random.normal(shape=(sample_num, self.latent_dim ))
-        return tf.nn.sigmoid(self.decode(eps))
+        return self.decode(eps)
 
 
     def reparameterize(self, mean, logvar):
-        eps = tf.random.normal(shape=mean.shape)
+        eps = tf.random.normal(shape=(mean.shape[0]*self.sample_num, mean.shape[1]))
+        mean = tf.repeat(mean, [self.sample_num]*len(mean), axis=0) 
+        logvar = tf.repeat(logvar, [self.sample_num]*len(logvar), axis=0)
         return eps*tf.exp(logvar * .5) + mean
-
 
     def compute_loss(self, x):
         # B size
@@ -78,8 +82,6 @@ class IWAE(BaseVAE):
         mean, logvar = self.encode(x)
 
         # BS x D
-        mean = tf.repeat(mean, [self.sample_num]*len(mean), axis=0) 
-        logvar = tf.repeat(logvar, [self.sample_num]*len(logvar), axis=0)
         z = self.reparameterize(mean, logvar)
 
         # BS x H x W x C
@@ -87,9 +89,9 @@ class IWAE(BaseVAE):
 
 
         # B x S x H x W x C
-        rec_x = tf.reshape(rec_x, shape=(B_size, -1, *tf.shape(rec_x).numpy()[1:]))
+        rec_x = tf.reshape(rec_x, shape=(B_size, -1, *self.img_shape))
         repeat_x = tf.repeat(x, [self.sample_num]*len(x), axis=0)
-        repeat_x = tf.reshape(repeat_x, shape=(B_size, -1, *tf.shape(repeat_x).numpy()[1:]))
+        repeat_x = tf.reshape(repeat_x, shape=(B_size, -1, *self.img_shape))
 
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=rec_x, labels=repeat_x)
         rec_loss = tf.reduce_sum(cross_ent, axis=[2,3,4]) # B x S
@@ -99,8 +101,19 @@ class IWAE(BaseVAE):
 
         loss = rec_loss + kl_loss # B x S
         loss_weight = tf.math.softmax(loss, axis=1)
+
+        # --- total loss
+        total_loss = tf.reduce_mean(tf.reduce_sum(loss_weight*loss, axis=-1), axis=0)
+
+        # --- calculate for KL_loss
+        kl_loss_weight = tf.math.softmax(kl_loss, axis=1)
+        kl_loss = tf.reduce_mean(tf.reduce_sum(kl_loss_weight*kl_loss, axis=-1), axis=0)
+
+        # --- reconstruct loss
+        recons_loss_weight = tf.math.softmax(rec_loss, axis=1)
+        rec_loss = tf.reduce_mean(tf.reduce_sum(recons_loss_weight*rec_loss, axis=-1), axis=0)
         
-        return tf.reduce_mean(tf.reduce_sum(loss_weight*loss, axis=-1), axis=0)
+        return {'total_loss':total_loss, 'kl_loss':kl_loss, 'recon_loss':rec_loss}
 
 
     def forward(self, x) -> List[Tensor]:
@@ -111,11 +124,11 @@ class IWAE(BaseVAE):
         mean, logvar = self.encode(x) 
 
         # BS X D
-        mean = tf.repeat(mean, [self.sample_num]*len(mean), axis=0) 
-        logvar = tf.repeat(logvar, [self.sample_num]*len(logvar), axis=0)
+        #mean = tf.repeat(mean, [self.sample_num]*len(mean), axis=0) 
+        #logvar = tf.repeat(logvar, [self.sample_num]*len(logvar), axis=0)
         z = self.reparameterize(logvar, logvar)
 
-        return [self.decode(z), mean, logvar]
+        return self.decode(z, apply_sigmoid=True)
 
     def generate(self, x):
         return self.forward(x)
@@ -123,7 +136,7 @@ class IWAE(BaseVAE):
     @tf.function
     def train_step(self, x, opt=tfk.optimizers.Adam(1e-4)):
         with tf.GradientTape() as tape:
-            loss = self.compute_loss(x)
+            loss = self.compute_loss(x)['total_loss']
         gradients = tape.gradient(loss, self.trainable_variables)
         opt.apply_gradients(zip(gradients, self.trainable_variables))
         return 
