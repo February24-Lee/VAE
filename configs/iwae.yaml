@@ -103,10 +103,10 @@ model_params:
 train_param:
   check_loss_cnt: 3
   epochs: 100
-  save_path: 'assets/IWAE'
-  save_model_path: 'save/IWAE'
+  save_path: 'assets/IWAE/'
+  save_model_path: 'save/IWAE/'
   save_iter: 5
-  check_point_path: 'checkpoint/IWAE'
+  check_point_path: 'checkpoint/IWAE/'
   check_point_iter: 5
   log_dir: 'logs/'
 

@@ -88,10 +88,10 @@ model_params:
 train_param:
   check_loss_cnt: 4
   epochs: 150
-  save_path: 'assets/VQVAE'
-  save_model_path: 'save/VQVAE'
+  save_path: 'assets/VQVAE/'
+  save_model_path: 'save/VQVAE/'
   save_iter: 5
-  check_point_path: 'checkpoint/VQVAE'
+  check_point_path: 'checkpoint/VQVAE/'
   check_point_iter: 5
   log_dir: 'logs/'
 
