@@ -6,6 +6,7 @@ from .VanillaVAE import *
 from .trainer import *
 from .IWAE import *
 from .VQVAE import *
+from .WAE_GAN import *
 
 
 VAE = VanillaVAE
@@ -13,5 +14,6 @@ VAE = VanillaVAE
 vae_models = {
     'VanillaVAE' : VanillaVAE,
     'IWAE' : IWAE,
-    'VQVAE' : VQVAE
+    'VQVAE' : VQVAE,
+    'WAE_GAN' : WAE_GAN
 }
