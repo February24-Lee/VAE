@@ -78,12 +78,12 @@ class WAE_GAN(BaseVAE):
 
         y_prior_loss = tfk.losses.binary_crossentropy(tf.ones_like(y_prior), y_prior)
         y_data_loss = tfk.losses.binary_crossentropy(tf.zeros_like(y_data), y_data)
-        disc_loss = tf.reduce_mean(-0.5 * (y_data_loss+y_prior_loss))
+        disc_loss = tf.reduce_mean(0.5 * (y_data_loss + y_prior_loss))
 
         # reconstruct loss
         recon_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, x_recons), axis=[1,2])
 
-        return {'total_loss' : tf.reduce_mean(recon_loss - self.regluar_weight * tfk.losses.binary_crossentropy(tf.ones_like(y_data), y_data)),
+        return {'total_loss' : tf.reduce_mean(recon_loss + self.regluar_weight * tfk.losses.binary_crossentropy(tf.ones_like(y_data), y_data)),
                 'disc_loss' : disc_loss,
                 'recons_loss' : tf.reduce_mean(recon_loss)}
 
