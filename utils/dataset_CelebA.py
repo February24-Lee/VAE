@@ -1,6 +1,7 @@
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from models.types_ import *
 
 tfk = tf.keras
 tfkl = tf.keras.layers
@@ -54,3 +55,6 @@ def genDatasetCelebA_test(**kwargs):
         plt.show()
 
 
+def makeBinary(inpuy_image:Tensor)->Tensor:
+    
+    return
