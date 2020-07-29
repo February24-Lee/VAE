@@ -53,7 +53,6 @@ class WAE_GAN(BaseVAE):
                 x = makeLayers(layer_spec=layer_spec)(x)
         self.decoder = tfk.Model(inputs=decoder_input, outputs=x)
 
-
     def encode(self, x:Tensor)->Tensor:
         return self.encoder(x)
 
@@ -62,11 +61,9 @@ class WAE_GAN(BaseVAE):
             return tf.nn.sigmoid(self.decoder(z))
         return self.decoder(z)
 
-
     def forward(self, x: Tensor) -> Tensor:
         return self.decode(self.encode(x), apply_sigmoid=True)
         
-
     def compute_loss(self, x:Tensor) -> dict:
         z_data = self.encode(x)
         z_prior = self.gen_random(shape=tf.shape(z_data))
@@ -105,7 +102,3 @@ class WAE_GAN(BaseVAE):
     def sample(self, sample_num: int=100):
         eps = self.gen_random(shape=[sample_num, self.latent_dim])
         return self.decode(eps, apply_sigmoid=True)
-
-        
-        
-        
