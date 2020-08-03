@@ -8,23 +8,30 @@ from .types_ import *
 tfk = tf.keras
 tfkl = tfk.layers
 
-class WAE_MMD(BaseVAE):
+class INFOVAE(BaseVAE):
     def __init__(self,
                 latent_dim : int = None,
                 input_shape : list = None,
                 encoder_layers: list = None,
                 decoder_layers: list = None,
-                regular_weight: int = None,
+                regular_weight: float = None,
+                recons_weight: float = None,
                 kernel_type: str = 'RBF',
                 kernel_var: float = 2.0,
+                alpha: float = 0.5,
                 **kwargs) -> None:
-        super(WAE_MMD, self).__init__()
 
+        super(INFOVAE, self).__init__()
+
+        assert alpha <= 1.0
+
+        self.model_name = 'INFOVAE'
         self.latent_dim = latent_dim
         self.regluar_weight = regular_weight
-        self.model_name = 'WAE_MMD'
+        self.recons_weight = recons_weight
         self.kernel_type = kernel_type
         self.kernel_var = kernel_var
+        self.alpha = alpha
 
         # --- prior dist [p(z)]
         self.gen_random = tf.random_normal_initializer()
@@ -49,7 +56,8 @@ class WAE_MMD(BaseVAE):
 
 
     def encode(self, x:Tensor)->Tensor:
-        return self.encoder(x)
+        mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
+        return mean, logvar
 
 
     def decode(self, z:Tensor, apply_sigmoid=False) -> Tensor:
@@ -59,7 +67,14 @@ class WAE_MMD(BaseVAE):
 
 
     def forward(self, x: Tensor) -> Tensor:
-        return self.decode(self.encode(x), apply_sigmoid=True)
+        mean, logvar = self.encode(x)
+        z = self.reparameterize(mean, logvar)
+        return self.decode(z, apply_sigmoid=True)
+
+
+    def reparameterize(self, mean: Tensor, logvar: Tensor) -> Tensor:
+        eps = tf.random.normal(shape=mean.shape)
+        return mean + eps*tf.exp(logvar * 0.5)
 
 
     def RBFKernel(self, x1:Tensor=None, x2:Tensor=None) -> Tensor:
@@ -81,26 +96,30 @@ class WAE_MMD(BaseVAE):
 
 
     def compute_loss(self, x:Tensor) -> dict:
-        z_data = self.encode(x)
+        mean, logvar = self.encode(x)
+        z_data = self.reparameterize(mean, logvar)
         z_prior = self.gen_random(shape=tf.shape(z_data))
         x_recons = self.decode(z_data, apply_sigmoid=True)
-
-        # number of shaple
-        n = z_prior.shape[0]
 
         # reconstruct loss [B x 1]
         recon_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, x_recons), axis=[1,2])
 
+        # KL loss [B x 1]
+        kl_loss = -0.5 * tf.reduce_sum((1 + logvar - mean**2 - tf.math.exp(logvar)), axis=1)
+
         # --- MMD_loss
         # Kernel(z_data,z_data) [B x 1]
-        mmd_loss_z_data = tf.reduce_sum(self.RBFKernel(z_data, z_data), axis=[-1]) / (n*(n-1))
-        mmd_loss_z_prior = tf.reduce_sum(self.RBFKernel(z_prior, z_prior), axis=[-1]) / (n*(n-1))
-        mmd_loss_z_data_prior = tf.reduce_sum(self.RBFKernel(z_prior, z_data), axis=[-1]) / (n*n)
+        mmd_loss_z_data = tf.reduce_mean(self.RBFKernel(z_data, z_data), axis=[-1]) 
+        mmd_loss_z_prior = tf.reduce_mean(self.RBFKernel(z_prior, z_prior), axis=[-1])
+        mmd_loss_z_data_prior = tf.reduce_mean(self.RBFKernel(z_prior, z_data), axis=[-1]) 
 
         mmd_loss = mmd_loss_z_data + mmd_loss_z_prior - 2 * mmd_loss_z_data_prior
 
-        return {'total_loss' : tf.reduce_mean(recon_loss + self.regluar_weight * mmd_loss),
-                'mmd_loss' : tf.reduce_mean(mmd_loss),
+        return {'total_loss' : tf.reduce_mean(self.recons_weight * recon_loss + 
+                                            (1-self.alpha) * kl_loss +
+                                            (self.alpha + self.regluar_weight  -1.) * mmd_loss),
+                'kl_loss': tf.reduce_mean(kl_loss),
+                'mmd_loss': tf.reduce_mean(mmd_loss),
                 'recons_loss' : tf.reduce_mean(recon_loss)}
 
     @tf.function
