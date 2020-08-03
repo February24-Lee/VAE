@@ -85,32 +85,32 @@ class WAE_MMD(BaseVAE):
         z_prior = self.gen_random(shape=tf.shape(z_data))
         x_recons = self.decode(z_data, apply_sigmoid=True)
 
+        # number of shaple
+        n = z_prior.shape[0]
+
         # reconstruct loss [B x 1]
         recon_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, x_recons), axis=[1,2])
 
         # --- MMD_loss
         # Kernel(z_data,z_data) [B x 1]
-        mmd_loss_z_data = tf.reduce_mean(self.RBFKernel(z_data, z_data), axis=[-1])
+        mmd_loss_z_data = tf.reduce_sum(self.RBFKernel(z_data, z_data), axis=[-1]) / (n*(n-1))
+        mmd_loss_z_prior = tf.reduce_sum(self.RBFKernel(z_prior, z_prior), axis=[-1]) / (n*(n-1))
+        mmd_loss_z_data_prior = tf.reduce_sum(self.RBFKernel(z_prior, z_data), axis=[-1]) / (n*n)
 
+        mmd_loss = mmd_loss_z_data + mmd_loss_z_prior - 2 * mmd_loss_z_data_prior
 
-
-        return {'total_loss' : tf.reduce_mean(recon_loss + self.regluar_weight * tfk.losses.binary_crossentropy(tf.ones_like(y_data), y_data)),
-                'disc_loss' : disc_loss,
+        return {'total_loss' : tf.reduce_mean(recon_loss + self.regluar_weight * mmd_loss),
+                'mmd_loss' : tf.reduce_mean(mmd_loss),
                 'recons_loss' : tf.reduce_mean(recon_loss)}
 
     @tf.function
     def train_step(self, x, opt=tfk.optimizers.Adam()) -> Tensor:
-        with tf.GradientTape(persistent=True) as tape:
-            loss_dic = self.compute_loss(x)
-            disc_loss = self.regluar_weight * loss_dic['disc_loss']
-            total_loss = loss_dic['total_loss']
-        disc_grad = tape.gradient(disc_loss, self.latent_disc.trainable_variables)
-        opt.apply_gradients(zip(disc_grad, self.latent_disc.trainable_variables))
-
-        layer_list = [*self.encoder.trainable_variables, *self.decoder.trainable_variables]
-        total_grad = tape.gradient(total_loss, layer_list)
-        opt.apply_gradients(zip(total_grad, layer_list))
-        del tape
+        with tf.GradientTape() as tape:
+            loss = self.compute_loss(x)
+        grad = tape.gradient(loss, self.trainable_variables)
+        opt.apply_gradients(zip(grad, self.trainable_variables))
+        return 
+        
 
     @tf.function
     def sample(self, sample_num: int=100):
