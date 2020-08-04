@@ -1,6 +1,7 @@
 import yaml
 import argparse
 import numpy as np
+from pathlib import Path
 
 from models import *
 from utils.dataset_CelebA import genDatasetCelebA_test
@@ -47,4 +48,5 @@ trainer(model,
 # --- save model
 if args.Is_save_model == 'true':
     path = config['train_param']['save_model_path'] + model.model_name +'.h5'
+    Path(path).mkdir(parents=True, exist_ok=True)
     model.save_weights(path)

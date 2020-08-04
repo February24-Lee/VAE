@@ -5,6 +5,7 @@ import numpy as np
 import datetime as dt
 from tqdm import tqdm
 from .types_ import *
+from pathlib import Path
 
 tfk = tf.keras
 tfkl = tf.keras.layers
@@ -93,12 +94,15 @@ def trainer(model,
             if len(x) is not batch_size:
                 x = next(test_x)
             reconstruct_x = model.forward(x)
+            color_type = 'rgb' # default
             # --- for gray_scale case
             if tf.shape(reconstruct_x)[-1] ==1:
                 reconstruct_x = tf.reshape(reconstruct_x, tf.shape(reconstruct_x)[:-1])
+                color_type = 'gray'
                 
             path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
-            save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale)
+            Path(path).mkdir(parents=True, exist_ok=True)
+            save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale, color_type=color_type)
 
 
         # --- check point sace
@@ -112,13 +116,17 @@ def save_images(model,
                 img_num=32,
                 x: List[np.array]=None,
                 path: str=None,
-                scale: str="sigmoid"):
+                scale: str="sigmoid",
+                color_type: str = 'rgb'):
     plt.figure(figsize=(10,10))
     if scale == 'tanh':
         x = (x+1.)/2. 
     for i in range(img_num):
         plt.subplot(8,4,i+1)
-        plt.imshow(x[i])
+        if color_type is 'gray':
+            plt.imshow(x[i], cmap='gray')
+        else :
+            plt.imshow(x[i])
         plt.axis('off')
     plt.savefig(path)
     return
