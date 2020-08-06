@@ -1,6 +1,7 @@
 import tensorflow as tf
 from .types_ import *
 from .decorder import make_ResNet50v2_Decoder
+import numpy as np
 
 tfk = tf.keras
 tfkl = tf.keras.layers

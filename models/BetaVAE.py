@@ -9,18 +9,28 @@ tfk = tf.keras
 tfkl = tf.keras.layers
 
 
-class VanillaVAE(BaseVAE):
+class BetaVAE(BaseVAE):
     def __init__(self, 
                 latent_dim : int = None,
                 input_shape : list = None,
                 encoder_layers: list = None,
                 decoder_layers: list = None,
+                beta: float = None,
+                kl_capacity: float = None,
+                kl_capacity_type: str = 'none',
                 **kwargs):
-        
-        super(VanillaVAE, self).__init__()
+        super(BetaVAE, self).__init__()
+        '''
+        kl_capacity_type :
+            'none' : just beta-vae
+            'C' : constance Capacity
+        '''
 
-        self.model_name = 'VanillaVAE'
+        self.model_name = 'BetaVAE'
         self.latent_dim = latent_dim
+        self.beta = beta
+        self.kl_capacity = kl_capacity
+        self.kl_capacity_type = kl_capacity_type
 
         # --- Encoder
         encoder_input = tfkl.Input(shape=input_shape)
@@ -50,11 +60,8 @@ class VanillaVAE(BaseVAE):
         return mean, logvar
 
 
-    def decode(self, z, apply_sigmoid=False):
-        x = self.decoder(z)
-        if apply_sigmoid :
-            x = tf.nn.sigmoid(x)
-        return x
+    def decode(self, z):
+        return self.decoder(z)
 
 
     @tf.function
@@ -72,24 +79,32 @@ class VanillaVAE(BaseVAE):
     def compute_loss(self, x) -> dict:
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
-        reconstruct_x = self.decode(z)
+        recons_x = self.decode(z)
         
         # BCE loss
-        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=reconstruct_x, labels=x)
-        rec_loss = tf.reduce_sum(cross_ent, axis=[1,2,3])
+        #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=reconstruct_x, labels=x)
+        #rec_loss = tf.reduce_sum(cross_ent, axis=[1,2,3])
+
+        # MSE loss
+        recons_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, recons_x), axis=[1,2])
 
         # KL loss
         kl_loss = -0.5 * tf.reduce_sum((1 + logvar - mean**2 - tf.math.exp(logvar)), axis=1)
 
-        return {'total_loss': tf.reduce_mean(rec_loss + kl_loss), 
-                'rec_loss' : tf.reduce_mean(rec_loss), 
+        if self.kl_capacity_type is "none":
+            total_loss = tf.reduce_mean(recons_loss + self.beta * kl_loss)
+        elif self.kl_capacity_type is "C":
+            total_loss = tf.reduce_mean(recons_loss + self.beta * tf.abs((kl_loss-self.kl_capacity)))
+
+        return {'total_loss': total_loss, 
+                'rec_loss' : tf.reduce_mean(recons_loss),
                 'kl_loss' : tf.reduce_mean(kl_loss)}
 
 
     def forward(self, x) -> List[Tensor]:
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
-        return self.decode(z, apply_sigmoid=True)
+        return self.decode(z)
 
     def generate(self, x):
         return self.forward(x)

@@ -9,6 +9,7 @@ from .VQVAE import *
 from .WAE_GAN import *
 from .WAE_MMD import *
 from .InfoVAE import *
+from .BetaVAE import *
 
 
 VAE = VanillaVAE
@@ -19,5 +20,6 @@ vae_models = {
     'VQVAE' : VQVAE,
     'WAE_GAN' : WAE_GAN,
     'WAE_MMD' : WAE_MMD,
-    'INFOVAE' : INFOVAE
+    'INFOVAE' : INFOVAE,
+    'BetaVAE' : BetaVAE
 }
