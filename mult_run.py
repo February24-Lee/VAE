@@ -18,6 +18,7 @@ parser.add_argument('--save_model', '-s',
                     default='true')
 
 args = parser.parse_args()
+
 with open(args.filename, 'r') as file:
     try :
         config = yaml.load(file, Loader=yaml.FullLoader)
@@ -28,16 +29,20 @@ for option in config['multi_train_param']:
     parent_param = option[0]
     sub_param = option[1]
     for opt_value in option[2]:
+
+        _save_path = config['train_param']['save_path']
+        _check_point_path = config['train_param']['check_point_path']
+        _log_dir = config['train_param']['log_dir']
+        _save_model_path = config['train_param']['save_model_path']
+
         # --- setting param
         config[parent_param][sub_param] = opt_value
 
         # change save_path, save_model_path, check_point_path, log_dir 
-        config['train_param']['save_path'] = config['train_param']['save_path'] + \
-            sub_param + '_' + str(opt_value) + "/"
-        config['train_param']['check_point_path'] = config['train_param']['check_point_path'] + \
-            sub_param + '_' + str(opt_value) + "/"
-        config['train_param']['log_dir'] = config['train_param']['log_dir'] + \
-            sub_param + '_' + str(opt_value) + "/"
+        config['train_param']['save_path'] = _save_path + sub_param + '_' + str(opt_value) + "/"
+        config['train_param']['check_point_path'] = _check_point_path + sub_param + '_' + str(opt_value) + "/"
+        config['train_param']['log_dir'] = _log_dir + sub_param + '_' + str(opt_value) + "/"
+
 
         # --- dataset
         train_gen, test_gen = genDatasetCelebA(**config['dataset_param'])
@@ -63,5 +68,12 @@ for option in config['multi_train_param']:
         # --- save model
         if args.Is_save_model == 'true':
             Path(config['train_param']['save_model_path']).mkdir(parents=True, exist_ok=True)
-            path = config['train_param']['save_model_path'] + model.model_name + sub_param + str(option) +'.h5'
+            path = _save_model_path + model.model_name + sub_param + str(opt_value) +'.h5'
             model.save_weights(path)
+        
+        # --- reload
+        with open(args.filename, 'r') as file:
+            try :
+                config = yaml.load(file, Loader=yaml.FullLoader)
+            except yaml.YAMLError as e:
+                print(e)

@@ -39,7 +39,7 @@ def trainer(model,
 
     for epoch in range(1, epochs+1):
         # --- Train
-        start_t = time.time()
+        #start_t = time.time()
         print('Epoch : {} training..'.format(epoch))
         for index, x in enumerate(tqdm(train_x)):
             if index > train_iter:
@@ -49,7 +49,7 @@ def trainer(model,
             elif scale == 'sigmoid':
                 x = x/255.
             model.train_step(x, opt=opt)
-        end_time = time.time()
+        #end_time = time.time()
 
         #  --- Calculate Trainset Loss
         for index, x in enumerate(train_x):
