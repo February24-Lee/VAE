@@ -4,7 +4,8 @@ import numpy as np
 from pathlib import Path
 
 from models import *
-from utils.dataset_CelebA import genDatasetCelebA_test
+from utils.dataset_CelebA import genDatasetCelebA
+from utils.dataset_Satellite import genDatasetSatellite
 import tensorflow as tf
 
 parser = argparse.ArgumentParser()
@@ -25,7 +26,10 @@ with open(args.filename, 'r') as file:
         print(e)
 
 # --- dataset
-train_gen, test_gen = genDatasetCelebA(**config['dataset_param'])
+if config['dataset_param']['datatype'] == 'satellite':
+    train_gen, test_gen = genDatasetSatellite(**config['dataset_param'])    
+else :
+    train_gen, test_gen = genDatasetCelebA(**config['dataset_param'])
 
 # --- model
 model = vae_models[config['model_params']['name']](**config['model_params'])

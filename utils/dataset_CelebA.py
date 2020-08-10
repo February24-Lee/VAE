@@ -53,8 +53,3 @@ def genDatasetCelebA_test(**kwargs):
             plt.imshow(test_ds[i]/255.)
             plt.title('test_{}'.format(i))
         plt.show()
-
-
-def makeBinary(inpuy_image:Tensor)->Tensor:
-    
-    return

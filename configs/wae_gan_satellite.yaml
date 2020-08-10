@@ -123,6 +123,8 @@ train_param:
   log_dir: 'logs/wae_gan_sate/'
 
 dataset_param:
+  datatype: 'satellite'
+  is_reverse: 'true'
   path: 'data/satellite'
   input_shape: [128, 128]
   color_mode: 'grayscale'
