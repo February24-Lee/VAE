@@ -119,11 +119,15 @@ def save_images(model,
                 path: str=None,
                 scale: str="sigmoid",
                 color_type: str = 'rgb'):
-    plt.figure(figsize=(10,10))
+    plt.figure(figsize=(15,15))
     if scale == 'tanh':
         x = (x+1.)/2. 
     for i in range(img_num):
-        plt.subplot(8,4,i+1)
+        if img_num == 32 :
+            plt.subplot(8,4,i+1)
+        elif img_num == 64 :
+            plt.subplot(8,8,i+1)
+
         if color_type is 'gray':
             plt.imshow(x[i], cmap='gray')
         else :
