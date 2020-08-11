@@ -9,7 +9,7 @@ tfkl = tf.keras.layers
 def genDatasetCelebA(path : str = None,
                     input_shape : list = (128, 128),
                     test_split : float = 0.2,
-                    batch_szie : int = 32,
+                    batch_size : int = 32,
                     shuffle : bool = True,
                     color_mode: str = 'rgb',
                     **kwargs):
@@ -24,14 +24,14 @@ def genDatasetCelebA(path : str = None,
                                             target_size=input_shape,
                                             color_mode= color_mode,
                                             class_mode=None,
-                                            batch_size=batch_szie,
+                                            batch_size=batch_size,
                                             shuffle=shuffle,
                                             subset='training')
     test_gen = datagen.flow_from_directory(path,
                                             target_size=input_shape,
                                             color_mode=color_mode,
                                             class_mode=None,
-                                            batch_size=batch_szie,
+                                            batch_size=batch_size,
                                             shuffle=shuffle,
                                             subset='validation')
     return train_gen, test_gen

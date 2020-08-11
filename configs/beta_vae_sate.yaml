@@ -124,7 +124,7 @@ dataset_param:
   input_shape: [128, 128]
   color_mode: 'grayscale'
   test_split: 0.2
-  batch_size: 32
+  batch_size: 64
   shuffle: True
   scale: 'sigmoid'
 
