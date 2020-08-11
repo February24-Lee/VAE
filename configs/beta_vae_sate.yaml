@@ -55,6 +55,7 @@ model_params:
       units: 8192
     - name: 'Reshape'
       target_shape: [4, 4, 512]
+
     - name: 'Conv2DTranspose'
       kernel_size: 3
       filters: 512
@@ -96,15 +97,14 @@ model_params:
     - name: 'LeakyReLu'
 
     - name: 'Conv2D'
-      filters: 3
+      filters: 1
       kernel_size: 3
       strides: [1,1]
       padding: 'same'
-    - name: 'tanh'
 
 train_param:
   check_loss_cnt: 3
-  epochs: 150
+  epochs: 300
   save_path: 'assets/beta_vae/'
   save_model_path: 'save/beta_vae/'
   save_iter: 5
@@ -118,14 +118,16 @@ multi_train_param:
     - [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 dataset_param:
+  datatype: 'satellite'
+  is_reverse: 'true'
   path: 'data/satellite'
   input_shape: [128, 128]
   color_mode: 'grayscale'
   test_split: 0.2
   batch_size: 32
   shuffle: True
-  scale: 'tanh'
+  scale: 'sigmoid'
 
 opt_param:
   name: 'Adam'
-  LR: 0.0005
+  LR: 0.0003
