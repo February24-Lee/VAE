@@ -60,33 +60,37 @@ class BetaVAE(BaseVAE):
         return mean, logvar
 
 
-    def decode(self, z):
-        return self.decoder(z)
+
+    def decode(self, z, apply_sigmoid=False):
+        x = self.decoder(z)
+        if apply_sigmoid :
+            x = tf.nn.sigmoid(x)
+        return x
 
 
     @tf.function
     def sample(self, sample_num: int =100, eps=None):
         if eps is None:
             eps = tf.random.normal(shape=(sample_num, self.latent_dim ))
-        return self.decode(eps)
+        return self.decode(eps, apply_sigmoid=True)
 
 
     def reparameterize(self, mean, logvar):
         eps = tf.random.normal(shape=mean.shape)
         return eps*tf.exp(logvar * .5) + mean
 
-
+    @tf.function
     def compute_loss(self, x) -> dict:
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
         recons_x = self.decode(z)
         
         # BCE loss
-        #cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=reconstruct_x, labels=x)
-        #rec_loss = tf.reduce_sum(cross_ent, axis=[1,2,3])
+        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=recons_x, labels=x)
+        recons_loss = tf.reduce_sum(cross_ent, axis=[1,2,3])
 
         # MSE loss
-        recons_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, recons_x), axis=[1,2])
+        #recons_loss = 100*tf.reduce_mean(tfk.losses.mean_squared_error(x, recons_x), axis=[1,2])
 
         # KL loss
         kl_loss = -0.5 * tf.reduce_sum((1 + logvar - mean**2 - tf.math.exp(logvar)), axis=1)
@@ -104,7 +108,7 @@ class BetaVAE(BaseVAE):
     def forward(self, x) -> List[Tensor]:
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)
-        return self.decode(z)
+        return self.decode(z, apply_sigmoid=True)
 
     def generate(self, x):
         return self.forward(x)

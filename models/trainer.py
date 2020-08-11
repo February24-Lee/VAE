@@ -100,9 +100,10 @@ def trainer(model,
                 reconstruct_x = tf.reshape(reconstruct_x, tf.shape(reconstruct_x)[:-1])
                 color_type = 'gray'
                 
+            Path(save_path).mkdir(parents=True, exist_ok=True)
             path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
-            Path(path).mkdir(parents=True, exist_ok=True)
             save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale, color_type=color_type)
+
 
 
         # --- check point sace
