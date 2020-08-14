@@ -55,7 +55,7 @@ model_params:
       padding: 'same'
 
 model_weight:
-  path: 'save/wae_mmd_sate/WAE_MMDkernel_capacity0.h5'
+  path: 'checkpoint/wae_mmd_sate/kernel_capacity_0/WAE_MMD_checkpoint_200'
 
 multi_train_param:
   - - 'model_params'
