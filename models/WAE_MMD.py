@@ -17,6 +17,7 @@ class WAE_MMD(BaseVAE):
                 regular_weight: int = None,
                 kernel_type: str = 'RBF',
                 kernel_var: float = 2.0,
+                kernel_capacity: float = 0.0,
                 **kwargs) -> None:
         super(WAE_MMD, self).__init__()
 
@@ -25,6 +26,7 @@ class WAE_MMD(BaseVAE):
         self.model_name = 'WAE_MMD'
         self.kernel_type = kernel_type
         self.kernel_var = kernel_var
+        self.kernel_capacity = kernel_capacity
 
         # --- prior dist [p(z)]
         self.gen_random = tf.random_normal_initializer()
@@ -89,7 +91,11 @@ class WAE_MMD(BaseVAE):
         n = z_prior.shape[0]
 
         # reconstruct loss [B x 1]
-        recon_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, x_recons), axis=[1,2])
+        #recon_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, x_recons), axis=[1,2])
+
+        # BCE loss
+        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_recons, labels=x)
+        recon_loss = tf.reduce_sum(cross_ent, axis=[1,2,3])
 
         # --- MMD_loss
         # Kernel(z_data,z_data) [B x 1]
@@ -99,7 +105,7 @@ class WAE_MMD(BaseVAE):
 
         mmd_loss = mmd_loss_z_data + mmd_loss_z_prior - 2 * mmd_loss_z_data_prior
 
-        return {'total_loss' : tf.reduce_mean(recon_loss + self.regluar_weight * mmd_loss),
+        return {'total_loss' : tf.reduce_mean(recon_loss + self.regluar_weight * tf.abs(mmd_loss-self.kernel_capacity)),
                 'mmd_loss' : tf.reduce_mean(mmd_loss),
                 'recons_loss' : tf.reduce_mean(recon_loss)}
 

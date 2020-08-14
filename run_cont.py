@@ -55,7 +55,7 @@ for option in config['multi_train_param']:
         model = vae_models[config['model_params']['name']](**config['model_params'])
 
         # --- weight_load
-        
+        model.load_weights(config['model_weight']['path'])
 
         # --- train
         trainer(model, 
