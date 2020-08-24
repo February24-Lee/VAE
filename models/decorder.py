@@ -3,6 +3,29 @@ from .types_ import *
 tfk = tf.keras
 tfkl = tfk.layers
 
+def make_ResNet50v2_Decoder_VQVAE(input_x:Tensor = None):
+    '''
+    Model
+    '''
+
+    # 16 * 16 * 128
+    filter_kernel_list = [[1,128], [3,128], [1,512]]
+    x = Residual_Block_A(input_x=input_x, input_channel_same=False, filter_kernel_list=filter_kernel_list)
+    x = Residual_Block_A(input_x=x, input_channel_same=True, filter_kernel_list=filter_kernel_list)
+    x = Residual_Block_A(input_x=x, input_channel_same=True, filter_kernel_list=filter_kernel_list)
+    # 16 * 16 * 512
+    filter_kernel_list = [[1,128], [3,128], [1,256]]
+    x = Residual_Block_A(input_x=x, input_channel_same=False, filter_kernel_list=filter_kernel_list)
+    # 16 * 16 * 256
+
+    filter_kernel_list = [[1,64], [3,64], [1,256]]
+    x = Residual_Block_B(input_x=x, input_channel_same=False, filter_kernel_list=filter_kernel_list)
+    x = Residual_Block_A(input_x=x, input_channel_same=True, filter_kernel_list=filter_kernel_list)
+    x = Residual_Block_A(input_x=x, input_channel_same=True, filter_kernel_list=filter_kernel_list)
+    # 32 * 32 * 256
+
+    return x
+
 def make_ResNet50v2_Decoder(input_x:Tensor = None):
     '''
     Model
