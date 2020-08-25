@@ -95,7 +95,7 @@ class WAE_MMD(BaseVAE):
 
         # BCE loss
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_recons, labels=x)
-        recon_loss = tf.reduce_sum(cross_ent, axis=[1,2,3])
+        recon_loss = tf.reduce_mean(cross_ent, axis=[1,2,3])
 
         # --- MMD_loss
         # Kernel(z_data,z_data) [B x 1]

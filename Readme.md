@@ -24,5 +24,10 @@ Dong Hyeook Lee
 **VQ-VAE** |  
 **CVAE** |
 **Beta-VAE**|
+**Disentangled-Beta-VAE**|
 **IWAE**|
+**InfoVAE**|
+**WVAE-GAN**|
+**WVAE-MMD**|
+
 

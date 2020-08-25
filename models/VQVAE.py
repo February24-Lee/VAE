@@ -43,7 +43,6 @@ class VectorQuantizer(tf.Module):
         
 
 
-
 class VQVAE(BaseVAE):
     def __init__(self,
                 input_shape:list = [128, 128, 3],
@@ -67,13 +66,14 @@ class VQVAE(BaseVAE):
             else :
                 x = makeLayers(layer_spec=layer_spec)(x)
         self.encoder = tfk.Model(inputs=encoder_input, outputs=x)
+        latent_shape = self.encoder.output.shape[1]
 
         # --- VQ
         self.vq = VectorQuantizer(num_embeddings=num_embeddings,
                                 latent_dim=latent_dim)
 
         # --- Decoder
-        decoder_input = tfkl.Input(shape=(16, 16, 128))
+        decoder_input = tfkl.Input(shape=(latent_shape, latent_shape, 128))
         for index, layer_spec in enumerate(decoder_layers):
             if index is 0 :
                 x = makeLayers(layer_spec=layer_spec)(decoder_input)
@@ -87,8 +87,11 @@ class VQVAE(BaseVAE):
         z = self.encoder(x)
         return z
 
-    def decode(self, z:Tensor) -> Tensor:
-        return self.decoder(z)
+    def decode(self, z:Tensor, apply_sigmoid=False) -> Tensor:
+        x = self.decoder(z)
+        if apply_sigmoid:
+            return tf.nn.sigmoid(x)
+        return x
 
     @tf.function
     def compute_loss(self, x):
@@ -104,16 +107,14 @@ class VQVAE(BaseVAE):
         # Residue back for update
         quantized_z = z + tf.stop_gradient(quantized_z - z)
 
-        recon_x = self.decode(quantized_z)
+        recon_x = self.decode(quantized_z, apply_sigmoid=False)
 
         #Reconstruct loss
         cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=recon_x, labels=x)
-        recon_loss = tf.reduce_mean(tf.reduce_sum(cross_ent, axis=[1,2,3]))
+        recon_loss = tf.reduce_mean(tf.reduce_mean(cross_ent, axis=[1,2,3]))
 
         #Total_loss
         total_loss = recon_loss + embedding_loss + self.beta * commitment_loss
-
-
         return {'total_loss':total_loss,
                 'rec_loss':recon_loss,
                 'embedding_loss':embedding_loss,
@@ -123,7 +124,7 @@ class VQVAE(BaseVAE):
     def forward(self, x:Tensor) -> Tensor:
         z = self.encode(x)
         quantized_z = self.vq(z)
-        return self.decode(quantized_z)
+        return self.decode(quantized_z, apply_sigmoid=True)
 
     @tf.function
     def train_step(self, x, opt=tfk.optimizers.Adam(1e-4)):

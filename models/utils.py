@@ -1,6 +1,6 @@
 import tensorflow as tf
 from .types_ import *
-from .decorder import make_ResNet50v2_Decoder
+from .decorder import make_ResNet50v2_Decoder, make_ResNet50v2_Decoder_VQVAE
 import numpy as np
 
 tfk = tf.keras
@@ -9,7 +9,15 @@ tfkl = tf.keras.layers
 def makeLayers(layer_spec: dict) -> Layer:
     if layer_spec['name'] == 'ResNet50v2':
         layer_spec.pop('name')
+        if '_slice_layer_num' in layer_spec:
+            layer_num = layer_spec['_slice_layer_num']
+            layer_spec.pop('_slice_layer_num')
+            _model = tfk.applications.ResNet50V2(**layer_spec)
+            return tfk.Model(inputs=_model.input, outputs=_model.layers[layer_num].output)
         return tfk.applications.ResNet50V2(**layer_spec)
+    elif layer_spec['name'] == 'make_ResNet50v2_Decoder_VQVAE':
+        layer_spec.pop('name')
+        return make_ResNet50v2_Decoder_VQVAE
     elif layer_spec['name'] == 'ResNet50v2_Decoder':
         layer_spec.pop('name')
         return make_ResNet50v2_Decoder

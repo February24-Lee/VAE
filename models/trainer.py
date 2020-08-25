@@ -24,8 +24,8 @@ def trainer(model,
             log_dir:str = 'logs/',
             check_loss_cnt:int = 1):
 
-    train_iter = train_x.n // batch_size
-    test_iter = test_x.n // batch_size
+    train_iter = train_x.n // train_x.batch_size
+    test_iter = test_x.n // test_x.batch_size
 
     # --- for log save
     current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
@@ -39,8 +39,8 @@ def trainer(model,
 
     for epoch in range(1, epochs+1):
         # --- Train
-        #start_t = time.time()
         print('Epoch : {} training..'.format(epoch))
+        train_x.reset()
         for index, x in enumerate(tqdm(train_x)):
             if index > train_iter:
                 break
@@ -49,8 +49,8 @@ def trainer(model,
             elif scale == 'sigmoid':
                 x = x/255.
             model.train_step(x, opt=opt)
-        #end_time = time.time()
 
+        train_x.reset()
         #  --- Calculate Trainset Loss
         for index, x in enumerate(train_x):
             if scale == 'tanh':
@@ -58,7 +58,7 @@ def trainer(model,
             elif scale == 'sigmoid':
                 x = x/255.
 
-            if index > test_iter:
+            if index > train_iter:
                 break
             loss_dic = model.compute_loss(x)
             for i, (_, value) in enumerate(loss_dic.items()):
@@ -70,6 +70,7 @@ def trainer(model,
                 tf.summary.scalar(loss_name, loss_list[index].result(), step=epoch)
                 loss_list[index].reset_states()
 
+        test_x.reset()
         # --- Calculate Testset Loss
         for index, x in enumerate(test_x):
             if scale == 'tanh':
@@ -89,6 +90,7 @@ def trainer(model,
                 tf.summary.scalar(loss_name, loss_list[index].result(), step=epoch)
                 loss_list[index].reset_states()
 
+        test_x.reset()
         # --- save image
         if epoch % save_iter == 0 :
             if len(x) is not batch_size:
