@@ -87,6 +87,7 @@ def trainer(model,
                 loss_list[i](value)
         loss = loss_list[0].result()
         print('Epoch: {}, Test set loss: {}'.format(epoch, loss))
+        FINAL_LOSS = loss_list[0].result()
         with test_summary_writer.as_default():
             for index, loss_name in enumerate(loss_dic):
                 tf.summary.scalar(loss_name, loss_list[index].result(), step=epoch)
@@ -118,7 +119,7 @@ def trainer(model,
             path = check_point_path + model.model_name +'_checkpoint_{}'.format(epoch)
             model.save_weights(path)
 
-    return 
+    return FINAL_LOSS
 
 def save_images(model,
                 img_num=32,

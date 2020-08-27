@@ -15,12 +15,14 @@ class VanillaVAE(BaseVAE):
                 input_shape : list = None,
                 encoder_layers: list = None,
                 decoder_layers: list = None,
+                loss_function_type: str = 'MSE',
                 **kwargs):
         
         super(VanillaVAE, self).__init__()
 
         self.model_name = 'VanillaVAE'
         self.latent_dim = latent_dim
+        self.loss_function_type = loss_function_type
 
         # --- Encoder
         encoder_input = tfkl.Input(shape=input_shape)
@@ -51,10 +53,15 @@ class VanillaVAE(BaseVAE):
 
 
     def decode(self, z, apply_sigmoid=False):
-        x = self.decoder(z)
-        if apply_sigmoid :
-            x = tf.nn.sigmoid(x)
-        return x
+        if self.loss_function_type == 'BCE':
+            x = self.decoder(z)
+            if apply_sigmoid :
+                x = tf.nn.sigmoid(x)
+            return x
+        elif self.loss_function_type == 'MSE':
+            return tf.nn.tanh(self.decoder(z))
+        else :
+            return self.decoder(z)
 
 
     @tf.function
@@ -74,9 +81,13 @@ class VanillaVAE(BaseVAE):
         z = self.reparameterize(mean, logvar)
         reconstruct_x = self.decode(z)
         
-        # BCE loss
-        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=reconstruct_x, labels=x)
-        rec_loss = tf.reduce_sum(cross_ent, axis=[1,2,3])
+        if self.loss_function_type == 'MSE':
+            # MSE loss
+            rec_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(x, reconstruct_x), axis=[1,2])
+        elif self.loss_function_type == 'BCE':
+            # BCE loss
+            cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=reconstruct_x, labels=x)
+            rec_loss = tf.reduce_mean(cross_ent, axis=[1,2,3])
 
         # KL loss
         kl_loss = -0.5 * tf.reduce_sum((1 + logvar - mean**2 - tf.math.exp(logvar)), axis=1)
