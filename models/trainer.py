@@ -31,8 +31,10 @@ def trainer(model,
     current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     train_log_dir = log_dir + current_time + '_' + model.model_name + '/train'
     test_log_dir = log_dir + current_time + '_' + model.model_name + '/test'
+    img_log_dir = log_dir + current_time + '_' + model.model_name + '/img'
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+    img_summary_writer = tf.summary.create_file_writer(img_log_dir)
 
     # --- make logs for loss functions
     loss_list = [tfk.metrics.Mean() for _ in range(check_loss_cnt)]
@@ -101,6 +103,9 @@ def trainer(model,
             if tf.shape(reconstruct_x)[-1] ==1:
                 reconstruct_x = tf.reshape(reconstruct_x, tf.shape(reconstruct_x)[:-1])
                 color_type = 'gray'
+            # --- TENSORBOARD
+            with img_summary_writer.as_default():
+                tf.summary.image('Reconstruct IMG', reconstruct_x, step=epoch, max_outputs=len(reconstruct_x))
                 
             Path(save_path).mkdir(parents=True, exist_ok=True)
             path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
