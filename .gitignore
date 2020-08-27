@@ -1,13 +1,19 @@
+
+# Byte-comiled / optimized
+__pycahe__
+*.py[cod]
+
+
+# Folder
 data/
-
 checkpoint/
-
 assets/
+logs/
+save/
 
+# test file
 *.ipynb
-
 .vscode
 
-logs/
 
-save/
+
