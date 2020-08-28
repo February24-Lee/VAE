@@ -477,6 +477,8 @@ train_param:
 
 dataset_param:
   path: 'data/satellite'
+  is_reverse: 'true'
+  datatype: 'satellite'
   input_shape: [128, 128]
   color_mode: 'grayscale'
   test_split: 0.2

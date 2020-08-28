@@ -100,18 +100,21 @@ def trainer(model,
                 x = next(test_x)
             reconstruct_x = model.forward(x)
             color_type = 'rgb' # default
+            
+            
+            # --- TENSORBOARD
+            with img_summary_writer.as_default():
+                tf.summary.image('Reconstruct IMG', reconstruct_x, step=epoch, max_outputs=len(reconstruct_x))
+
             # --- for gray_scale case
             if tf.shape(reconstruct_x)[-1] ==1:
                 reconstruct_x = tf.reshape(reconstruct_x, tf.shape(reconstruct_x)[:-1])
                 color_type = 'gray'
-            # --- TENSORBOARD
-            with img_summary_writer.as_default():
-                tf.summary.image('Reconstruct IMG', reconstruct_x, step=epoch, max_outputs=len(reconstruct_x))
+            
                 
             Path(save_path).mkdir(parents=True, exist_ok=True)
             path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
             save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale, color_type=color_type)
-
 
 
         # --- check point sace
