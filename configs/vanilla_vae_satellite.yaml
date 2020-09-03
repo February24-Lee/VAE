@@ -1,7 +1,8 @@
 model_params:
   name: 'VanillaVAE'
   input_shape: [128, 128, 1]
-  latent_dim: 128
+  latent_dim: 16
+  loss_function_type: 'BCE'
   encoder_layers:
     - name: 'Conv2D'
       filters: 32
@@ -44,7 +45,7 @@ model_params:
     - name: 'LeakyReLu'
     - name: 'Flatten'
     - name: 'Dense'
-      units: 256
+      units: 32
 
   decoder_layers:
     - name: 'Dense'
@@ -90,6 +91,7 @@ model_params:
       padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
+
     - name: 'Conv2D'
       filters: 1
       kernel_size: 3
@@ -99,7 +101,7 @@ model_params:
 
 train_param:
   check_loss_cnt: 3
-  epochs: 1000
+  epochs: 500
   save_path: 'assets/satellite/'
   save_model_path: 'save/'
   save_iter: 50
@@ -108,15 +110,17 @@ train_param:
   log_dir: 'logs/'
 
 dataset_param:
+  datatype: 'satellite'
+  is_reverse: 'true'
   path: 'data/satellite/'
   input_shape: [128, 128]
   color_mode: 'grayscale'
   test_split: 0.2
-  batch_size: 32
+  batch_size: 64
   shuffle: True
   scale: 'sigmoid'
 
   
 opt_param:
   name: 'Adam'
-  LR: 0.001
+  LR: 0.0001

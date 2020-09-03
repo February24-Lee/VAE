@@ -29,12 +29,22 @@ def trainer(model,
 
     # --- for log save
     current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-    train_log_dir = log_dir + current_time + '_' + model.model_name + '/train'
-    test_log_dir = log_dir + current_time + '_' + model.model_name + '/test'
-    img_log_dir = log_dir + current_time + '_' + model.model_name + '/img'
+
+    # --- TOTAL SAVE PATH
+    RESULT_PATH = 'result/' + current_time + '_' + model.model_name + '/'
+
+    train_log_dir = RESULT_PATH + log_dir + 'train'
+    test_log_dir = RESULT_PATH + log_dir + 'test'
+    img_log_dir = RESULT_PATH + log_dir + 'img'
+
+    # --- original version
+    #train_log_dir = log_dir + current_time + '_' + model.model_name + '/train'
+    #test_log_dir = log_dir + current_time + '_' + model.model_name + '/test'
+    #img_log_dir = log_dir + current_time + '_' + model.model_name + '/img'
+
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
-    img_summary_writer = tf.summary.create_file_writer(img_log_dir)
+    #img_summary_writer = tf.summary.create_file_writer(img_log_dir)
 
     # --- make logs for loss functions
     loss_list = [tfk.metrics.Mean() for _ in range(check_loss_cnt)]
@@ -103,23 +113,21 @@ def trainer(model,
             
             
             # --- TENSORBOARD
-            with img_summary_writer.as_default():
-                tf.summary.image('Reconstruct IMG', reconstruct_x, step=epoch, max_outputs=len(reconstruct_x))
+            #with img_summary_writer.as_default():
+            #    tf.summary.image('Reconstruct IMG', reconstruct_x, step=epoch, max_outputs=len(reconstruct_x))
 
             # --- for gray_scale case
             if tf.shape(reconstruct_x)[-1] ==1:
                 reconstruct_x = tf.reshape(reconstruct_x, tf.shape(reconstruct_x)[:-1])
                 color_type = 'gray'
             
-                
-            Path(save_path).mkdir(parents=True, exist_ok=True)
-            path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
+            Path(RESULT_PATH + save_path).mkdir(parents=True, exist_ok=True)
+            path = RESULT_PATH + save_path + 'epoch_' + str(epoch) + '.png'
             save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale, color_type=color_type)
-
 
         # --- check point sace
         if epoch % check_point_iter == 0 :
-            path = check_point_path + model.model_name +'_checkpoint_{}'.format(epoch)
+            path = RESULT_PATH + check_point_path + 'checkpoint_{}'.format(epoch)
             model.save_weights(path)
 
     return FINAL_LOSS

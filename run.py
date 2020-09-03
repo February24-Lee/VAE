@@ -51,6 +51,6 @@ trainer(model,
 
 # --- save model
 if args.Is_save_model == 'true':
-    Path(config['train_param']['save_model_path']).mkdir(parents=True, exist_ok=True)
-    path = config['train_param']['save_model_path'] + model.model_name +'.h5' 
+    Path('result/'+config['train_param']['save_model_path']).mkdir(parents=True, exist_ok=True)
+    path = 'result/'+config['train_param']['save_model_path'] + model.model_name +'.h5' 
     model.save_weights(path)
