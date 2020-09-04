@@ -6,6 +6,7 @@ model_params:
   kernel_capacity: 0
   kernel_type: 'RBF'
   kernel_var: 2.0
+  loss_function_type: 'BCE'
   encoder_layers:
     - name: 'ResNet50v2'
       include_top: False

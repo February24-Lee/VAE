@@ -18,6 +18,7 @@ class WAE_MMD(BaseVAE):
                 kernel_type: str = 'RBF',
                 kernel_var: float = 2.0,
                 kernel_capacity: float = 0.0,
+                loss_function_type: str = 'MSE',
                 **kwargs) -> None:
         super(WAE_MMD, self).__init__()
 
@@ -27,6 +28,7 @@ class WAE_MMD(BaseVAE):
         self.kernel_type = kernel_type
         self.kernel_var = kernel_var
         self.kernel_capacity = kernel_capacity
+        self.loss_function_type = loss_function_type
 
         # --- prior dist [p(z)]
         self.gen_random = tf.random_normal_initializer()
@@ -55,10 +57,14 @@ class WAE_MMD(BaseVAE):
 
 
     def decode(self, z:Tensor, apply_sigmoid=False) -> Tensor:
-        if apply_sigmoid :
-            return tf.nn.sigmoid(self.decoder(z))
-        return self.decoder(z)
-
+        if self.loss_function_type == 'BCE':
+            if apply_sigmoid :
+                return tf.nn.sigmoid(self.decoder(z))
+            return self.decoder(z)
+        elif self.loss_function_type == 'MSE':
+            return tf.nn.tanh(self.decoder(z))
+        else:
+            return self.decoder(z)
 
     def forward(self, x: Tensor) -> Tensor:
         return self.decode(self.encode(x), apply_sigmoid=True)
@@ -85,17 +91,19 @@ class WAE_MMD(BaseVAE):
     def compute_loss(self, x:Tensor) -> dict:
         z_data = self.encode(x)
         z_prior = self.gen_random(shape=tf.shape(z_data))
-        x_recons = self.decode(z_data, apply_sigmoid=True)
+        x_recons = self.decode(z_data, apply_sigmoid=False)
 
         # number of shaple
         n = z_prior.shape[0]
 
         # reconstruct loss [B x 1]
-        #recon_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, x_recons), axis=[1,2])
-
-        # BCE loss
-        cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_recons, labels=x)
-        recon_loss = tf.reduce_mean(cross_ent, axis=[1,2,3])
+        if self.loss_function_type == 'MSE':
+            # MSE loss
+            recon_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(x, x_recons), axis=[1,2])
+        elif self.loss_function_type == 'BCE':
+            # BCE loss
+            cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_recons, labels=x)
+            recon_loss = tf.reduce_mean(cross_ent, axis=[1,2,3])
 
         # --- MMD_loss
         # Kernel(z_data,z_data) [B x 1]

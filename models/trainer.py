@@ -22,16 +22,18 @@ def trainer(model,
             check_point_path:str = 'checkpoint/',
             check_point_iter:int = 5,
             log_dir:str = 'logs/',
-            check_loss_cnt:int = 1):
+            check_loss_cnt:int = 1,
+            result_path : str = None,
+            **kwargs):
 
     train_iter = train_x.n // train_x.batch_size
     test_iter = test_x.n // test_x.batch_size
 
     # --- for log save
-    current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+    #current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
 
     # --- TOTAL SAVE PATH
-    RESULT_PATH = 'result/' + current_time + '_' + model.model_name + '/'
+    RESULT_PATH = result_path
 
     train_log_dir = RESULT_PATH + log_dir + 'train'
     test_log_dir = RESULT_PATH + log_dir + 'test'
