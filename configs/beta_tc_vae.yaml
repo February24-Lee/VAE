@@ -1,0 +1,130 @@
+model_params:
+  name: 'BetaTCVAE'
+  input_shape: [128, 128, 3]
+  latent_dim: 128
+  alpha: 1.
+  beta: 6.
+  gamma: 1.
+  data_size: 162080
+  loss_function_type: 'BCE'
+  encoder_layers:
+    - name: 'Conv2D'
+      filters: 32
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      filters: 64
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      filters: 128
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      filters: 256
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      filters: 512
+      kernel_size: 3
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Flatten'
+    - name: 'Dense'
+      units: 256
+
+  decoder_layers:
+    - name: 'Dense'
+      units: 8192
+    - name: 'Reshape'
+      target_shape: [4, 4, 512]
+
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 512
+      strides: [2,2]
+      padding: 'same'    
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 256
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 128
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 64
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2DTranspose'
+      kernel_size: 3
+      filters: 32
+      strides: [2,2]
+      padding: 'same'
+    - name: 'BN'
+    - name: 'LeakyReLu'
+
+    - name: 'Conv2D'
+      filters: 3
+      kernel_size: 3
+      strides: [1,1]
+      padding: 'same'
+
+train_param:
+  check_loss_cnt: 3
+  epochs: 1000
+  save_path: 'assets/beta_tc_vae/'
+  save_model_path: 'save/beta_tc_vae/'
+  save_iter: 10
+  check_point_path: 'checkpoint/beta_tc_vae/'
+  check_point_iter: 100
+  log_dir: 'logs/beta_tc_vae/'
+
+dataset_param:
+  datatype: 'celeba'
+  path: 'data/celeba'
+  input_shape: [128, 128]
+  test_split: 0.2
+  batch_size: 32
+  shuffle: True
+  scale: 'sigmoid'
+
+opt_param:
+  name: 'Adam'
+  initial_learning_rate: 0.001
+  decay_steps: 200
+  decay_rate: 0.90
