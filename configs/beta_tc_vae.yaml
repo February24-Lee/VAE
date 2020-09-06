@@ -105,7 +105,7 @@ model_params:
       padding: 'same'
 
 train_param:
-  check_loss_cnt: 3
+  check_loss_cnt: 5
   epochs: 1000
   save_path: 'assets/beta_tc_vae/'
   save_model_path: 'save/beta_tc_vae/'
