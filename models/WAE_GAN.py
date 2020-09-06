@@ -16,12 +16,14 @@ class WAE_GAN(BaseVAE):
                 decoder_layers: list = None,
                 latent_discriminator_layers: list = None,
                 regular_weight: int = None,
+                loss_function_type: str = 'MSE',
                 **kwargs) -> None:
         super(WAE_GAN, self).__init__()
 
         self.latent_dim = latent_dim
         self.regluar_weight = regular_weight
         self.model_name = 'WAE_GAN'
+        self.loss_function_type = loss_function_type
 
         # --- prior dist [p(z)]
         self.gen_random = tf.random_normal_initializer()
@@ -57,9 +59,14 @@ class WAE_GAN(BaseVAE):
         return self.encoder(x)
 
     def decode(self, z:Tensor, apply_sigmoid=False) -> Tensor:
-        if apply_sigmoid :
-            return tf.nn.sigmoid(self.decoder(z))
-        return self.decoder(z)
+        if self.loss_function_type == 'BCE':
+            if apply_sigmoid :
+                return tf.nn.sigmoid(self.decoder(z))
+            return self.decoder(z)
+        elif self.loss_function_type == 'MSE':
+            return tf.nn.tanh(self.decoder(z))
+        else:
+            return self.decoder(z)
 
     def forward(self, x: Tensor) -> Tensor:
         return self.decode(self.encode(x), apply_sigmoid=True)
@@ -78,7 +85,13 @@ class WAE_GAN(BaseVAE):
         disc_loss = tf.reduce_mean(0.5 * (y_data_loss + y_prior_loss))
 
         # reconstruct loss
-        recon_loss = tf.reduce_mean(tfk.losses.mean_squared_error(x, x_recons), axis=[1,2])
+        if self.loss_function_type == 'MSE':
+            # MSE loss
+            recon_loss = tf.reduce_mean(tf.keras.losses.mean_squared_error(x, x_recons), axis=[1,2])
+        elif self.loss_function_type == 'BCE':
+            # BCE loss
+            cross_ent = tf.nn.sigmoid_cross_entropy_with_logits(logits=x_recons, labels=x)
+            recon_loss = tf.reduce_mean(cross_ent, axis=[1,2,3])
 
         return {'total_loss' : tf.reduce_mean(recon_loss + self.regluar_weight * tfk.losses.binary_crossentropy(tf.ones_like(y_data), y_data)),
                 'disc_loss' : disc_loss,

@@ -22,17 +22,31 @@ def trainer(model,
             check_point_path:str = 'checkpoint/',
             check_point_iter:int = 5,
             log_dir:str = 'logs/',
-            check_loss_cnt:int = 1):
+            check_loss_cnt:int = 1,
+            result_path : str = None,
+            **kwargs):
 
     train_iter = train_x.n // train_x.batch_size
     test_iter = test_x.n // test_x.batch_size
 
     # --- for log save
-    current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
-    train_log_dir = log_dir + current_time + '_' + model.model_name + '/train'
-    test_log_dir = log_dir + current_time + '_' + model.model_name + '/test'
+    #current_time = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+
+    # --- TOTAL SAVE PATH
+    RESULT_PATH = result_path
+
+    train_log_dir = RESULT_PATH + log_dir + 'train'
+    test_log_dir = RESULT_PATH + log_dir + 'test'
+    img_log_dir = RESULT_PATH + log_dir + 'img'
+
+    # --- original version
+    #train_log_dir = log_dir + current_time + '_' + model.model_name + '/train'
+    #test_log_dir = log_dir + current_time + '_' + model.model_name + '/test'
+    #img_log_dir = log_dir + current_time + '_' + model.model_name + '/img'
+
     train_summary_writer = tf.summary.create_file_writer(train_log_dir)
     test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+    #img_summary_writer = tf.summary.create_file_writer(img_log_dir)
 
     # --- make logs for loss functions
     loss_list = [tfk.metrics.Mean() for _ in range(check_loss_cnt)]
@@ -85,6 +99,7 @@ def trainer(model,
                 loss_list[i](value)
         loss = loss_list[0].result()
         print('Epoch: {}, Test set loss: {}'.format(epoch, loss))
+        FINAL_LOSS = loss_list[0].result()
         with test_summary_writer.as_default():
             for index, loss_name in enumerate(loss_dic):
                 tf.summary.scalar(loss_name, loss_list[index].result(), step=epoch)
@@ -97,23 +112,27 @@ def trainer(model,
                 x = next(test_x)
             reconstruct_x = model.forward(x)
             color_type = 'rgb' # default
+            
+            
+            # --- TENSORBOARD
+            #with img_summary_writer.as_default():
+            #    tf.summary.image('Reconstruct IMG', reconstruct_x, step=epoch, max_outputs=len(reconstruct_x))
+
             # --- for gray_scale case
             if tf.shape(reconstruct_x)[-1] ==1:
                 reconstruct_x = tf.reshape(reconstruct_x, tf.shape(reconstruct_x)[:-1])
                 color_type = 'gray'
-                
-            Path(save_path).mkdir(parents=True, exist_ok=True)
-            path = save_path + model.model_name + '_epoch_' + str(epoch) + '.png'
+            
+            Path(RESULT_PATH + save_path).mkdir(parents=True, exist_ok=True)
+            path = RESULT_PATH + save_path + 'epoch_' + str(epoch) + '.png'
             save_images(model, img_num=batch_size, x=reconstruct_x, path=path, scale=scale, color_type=color_type)
-
-
 
         # --- check point sace
         if epoch % check_point_iter == 0 :
-            path = check_point_path + model.model_name +'_checkpoint_{}'.format(epoch)
+            path = RESULT_PATH + check_point_path + 'checkpoint_{}'.format(epoch)
             model.save_weights(path)
 
-    return 
+    return FINAL_LOSS
 
 def save_images(model,
                 img_num=32,
