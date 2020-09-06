@@ -80,7 +80,7 @@ class BetaVAE(BaseVAE):
         return eps*tf.exp(logvar * .5) + mean
 
     @tf.function
-    def compute_loss(self, x) -> dict:
+    def compute_loss(self, x, **kwargs) -> dict:
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
         recons_x = self.decode(z)
@@ -104,7 +104,7 @@ class BetaVAE(BaseVAE):
                 'rec_loss' : tf.reduce_mean(recons_loss),
                 'kl_loss' : tf.reduce_mean(kl_loss)}
 
-
+    @tf.function
     def forward(self, x) -> List[Tensor]:
         mu, logvar = self.encode(x)
         z = self.reparameterize(mu, logvar)

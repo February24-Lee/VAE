@@ -95,7 +95,7 @@ class INFOVAE(BaseVAE):
         return tf.math.exp(-dist/(2.0 * self.kernel_var * self.latent_dim))
 
 
-    def compute_loss(self, x:Tensor) -> dict:
+    def compute_loss(self, x:Tensor, **kwargs) -> dict:
         mean, logvar = self.encode(x)
         z_data = self.reparameterize(mean, logvar)
         z_prior = self.gen_random(shape=tf.shape(z_data))

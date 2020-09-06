@@ -74,7 +74,7 @@ class IWAE(BaseVAE):
         logvar = tf.repeat(logvar, [self.sample_num]*len(logvar), axis=0)
         return eps*tf.exp(logvar * .5) + mean
 
-    def compute_loss(self, x):
+    def compute_loss(self, x, **kwargs):
         # B size
         B_size = len(x)
 

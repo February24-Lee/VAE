@@ -94,7 +94,7 @@ class VQVAE(BaseVAE):
         return x
 
     @tf.function
-    def compute_loss(self, x):
+    def compute_loss(self, x, **kwargs):
         z = self.encoder(x)
         quantized_z = self.vq(z)
 

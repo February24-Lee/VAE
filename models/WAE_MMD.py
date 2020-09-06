@@ -88,7 +88,7 @@ class WAE_MMD(BaseVAE):
         return tf.math.exp(-dist/(2.0 * self.kernel_var * self.latent_dim))
 
 
-    def compute_loss(self, x:Tensor) -> dict:
+    def compute_loss(self, x:Tensor, **kwargs) -> dict:
         z_data = self.encode(x)
         z_prior = self.gen_random(shape=tf.shape(z_data))
         x_recons = self.decode(z_data, apply_sigmoid=False)
