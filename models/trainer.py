@@ -39,6 +39,7 @@ def trainer(model,
     test_log_dir = RESULT_PATH + log_dir + 'test'
     img_log_dir = RESULT_PATH + log_dir + 'img'
 
+
     # --- original version
     #train_log_dir = log_dir + current_time + '_' + model.model_name + '/train'
     #test_log_dir = log_dir + current_time + '_' + model.model_name + '/test'
@@ -74,7 +75,7 @@ def trainer(model,
 
             if index > train_iter:
                 break
-            loss_dic = model.compute_loss(x)
+            loss_dic = model.compute_loss(x, is_training=True)
             for i, (_, value) in enumerate(loss_dic.items()):
                 loss_list[i](value)
         loss = loss_list[0].result()
@@ -94,7 +95,7 @@ def trainer(model,
 
             if index > test_iter:
                 break
-            loss_dic = model.compute_loss(x)
+            loss_dic = model.compute_loss(x, is_training=False)
             for i, (_, value) in enumerate(loss_dic.items()):
                 loss_list[i](value)
         loss = loss_list[0].result()

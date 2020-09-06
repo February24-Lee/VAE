@@ -71,7 +71,7 @@ class WAE_GAN(BaseVAE):
     def forward(self, x: Tensor) -> Tensor:
         return self.decode(self.encode(x), apply_sigmoid=True)
         
-    def compute_loss(self, x:Tensor) -> dict:
+    def compute_loss(self, x:Tensor, **kwargs) -> dict:
         z_data = self.encode(x)
         z_prior = self.gen_random(shape=tf.shape(z_data))
         x_recons = self.decode(z_data, apply_sigmoid=True)

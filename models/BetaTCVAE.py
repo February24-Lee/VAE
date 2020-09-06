@@ -23,7 +23,8 @@ class BetaTCVAE(BaseVAE):
                 beta : float = None,
                 gamma : float = None,
                 loss_function_type : str = 'MSE',
-                data_size : int = None,
+                train_data_size : int = None,
+                test_data_size : int = None,
                 **kwargs) -> None:
         super(BetaTCVAE, self).__init__()
 
@@ -33,7 +34,8 @@ class BetaTCVAE(BaseVAE):
         self.beta = beta
         self.gamma = gamma
         self.loss_function_type = loss_function_type
-        self.data_size = data_size
+        self.train_data_size = train_data_size
+        self.test_data_size = test_data_size
 
         # --- Encoder
         encoder_input = tfkl.Input(shape=input_shape)
@@ -91,14 +93,17 @@ class BetaTCVAE(BaseVAE):
         return self.decode(z, apply_sigmoid=True)
 
     @tf.function
-    def compute_loss(self, x: Tensor) -> dict:
+    def compute_loss(self, x: Tensor, is_training=True) -> dict:
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
         recons_x = self.decode(z) # not apply activate function
 
         batch_size =  z.shape[0]
         latent_dim = self.latent_dim
-        dataset_size = self.data_size
+        if is_training :
+            dataset_size = self.train_data_size
+        else :
+            dataset_size = self.test_data_size
 
         # --- reconstruct loss
         if self.loss_function_type == 'MSE':

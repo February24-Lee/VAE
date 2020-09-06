@@ -76,7 +76,7 @@ class VanillaVAE(BaseVAE):
         return eps*tf.exp(logvar * .5) + mean
 
 
-    def compute_loss(self, x) -> dict:
+    def compute_loss(self, x, **kwargs) -> dict:
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
         reconstruct_x = self.decode(z)

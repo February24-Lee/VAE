@@ -5,7 +5,8 @@ model_params:
   alpha: 1.
   beta: 6.
   gamma: 1.
-  data_size: 162080
+  train_data_size: 162080
+  test_data_size: 40519
   loss_function_type: 'BCE'
   encoder_layers:
     - name: 'Conv2D'
