@@ -1,6 +1,6 @@
 model_params:
   name: 'BetaTCVAE'
-  input_shape: [128, 128, 3]
+  input_shape: [64, 64, 3]
   latent_dim: 128
   alpha: 1.
   beta: 6.
@@ -12,7 +12,7 @@ model_params:
     - name: 'ResNet50v2'
       include_top: False
       weights: null
-      input_shape: [128,128,3]
+      input_shape: [64,64,3]
       pooling: 'max'
 
     - name: 'Dense'
@@ -40,14 +40,6 @@ model_params:
       filters: 64
       strides: [2,2]
       padding: 'same'    
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
-    - name: 'Conv2DTranspose'
-      kernel_size: 3
-      filters: 64
-      strides: [2,2]
-      padding: 'same'
     - name: 'BN'
     - name: 'LeakyReLu'
 
