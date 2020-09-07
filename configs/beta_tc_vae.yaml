@@ -1,6 +1,6 @@
 model_params:
   name: 'BetaTCVAE'
-  input_shape: [128, 128, 3]
+  input_shape: [64, 64, 3]
   latent_dim: 128
   alpha: 1.
   beta: 6.
@@ -12,7 +12,7 @@ model_params:
     - name: 'ResNet50v2'
       include_top: False
       weights: null
-      input_shape: [128,128,3]
+      input_shape: [64,64,3]
       pooling: 'max'
 
     - name: 'Dense'
@@ -70,7 +70,7 @@ train_param:
 dataset_param:
   datatype: 'celeba'
   path: 'data/celeba'
-  input_shape: [128, 128]
+  input_shape: [64, 64]
   test_split: 0.2
   batch_size: 32
   shuffle: True
@@ -79,5 +79,5 @@ dataset_param:
 opt_param:
   name: 'Adam'
   initial_learning_rate: 0.001
-  decay_steps: 200
+  decay_steps: 100
   decay_rate: 0.90
