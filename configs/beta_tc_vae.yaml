@@ -43,14 +43,6 @@ model_params:
     - name: 'BN'
     - name: 'LeakyReLu'
 
-    - name: 'Conv2DTranspose'
-      kernel_size: 3
-      filters: 64
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
     - name: 'Conv2D'
       filters: 3
       kernel_size: 3
