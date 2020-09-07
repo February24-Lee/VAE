@@ -9,59 +9,35 @@ model_params:
   test_data_size: 40519
   loss_function_type: 'BCE'
   encoder_layers:
-    - name: 'Conv2D'
-      filters: 32
-      kernel_size: 3
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
+    - name: 'ResNet50v2'
+      include_top: False
+      weights: null
+      input_shape: [128,128,3]
+      pooling: 'max'
 
-    - name: 'Conv2D'
-      filters: 64
-      kernel_size: 3
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
-    - name: 'Conv2D'
-      filters: 128
-      kernel_size: 3
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
-    - name: 'Conv2D'
-      filters: 256
-      kernel_size: 3
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
-    - name: 'Conv2D'
-      filters: 512
-      kernel_size: 3
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
-    - name: 'Flatten'
+    - name: 'Dense'
+      units: 1024
+      activation: 'relu'
     - name: 'Dense'
       units: 256
 
   decoder_layers:
     - name: 'Dense'
-      units: 8192
+      units: 512
+      activation: 'relu'
+    - name: 'Dense'
+      units: 2048
+      activation: 'relu'
     - name: 'Reshape'
-      target_shape: [4, 4, 512]
+      target_shape: [1, 1, 2048]
+    - name: 'UpSampling2D'
+      size: 4
+
+    - name: 'ResNet50v2_Decoder'
 
     - name: 'Conv2DTranspose'
       kernel_size: 3
-      filters: 512
+      filters: 64
       strides: [2,2]
       padding: 'same'    
     - name: 'BN'
@@ -69,31 +45,7 @@ model_params:
 
     - name: 'Conv2DTranspose'
       kernel_size: 3
-      filters: 256
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
-    - name: 'Conv2DTranspose'
-      kernel_size: 3
-      filters: 128
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
-    - name: 'Conv2DTranspose'
-      kernel_size: 3
       filters: 64
-      strides: [2,2]
-      padding: 'same'
-    - name: 'BN'
-    - name: 'LeakyReLu'
-
-    - name: 'Conv2DTranspose'
-      kernel_size: 3
-      filters: 32
       strides: [2,2]
       padding: 'same'
     - name: 'BN'
