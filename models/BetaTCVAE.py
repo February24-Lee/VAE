@@ -134,9 +134,7 @@ class BetaTCVAE(BaseVAE):
         importance_weight_np.reshape(-1)[1::batch_size+1] = strat_weight
         importance_weight_np[-1,0] = strat_weight
 
-        log_importance_weight = tf.math.log(importance_weight_np)
-
-        mat_log_q_z += tf.reshape(log_importance_weight, [batch_size, batch_size, 1])
+        mat_log_q_z += tf.reshape(importance_weight_np, [batch_size, batch_size, 1])
 
         log_q_z = tf.reduce_logsumexp(tf.reduce_sum(mat_log_q_z, axis=2), axis=1, keepdims=False)
         log_prod_q_z = tf.reduce_sum(tf.reduce_logsumexp(mat_log_q_z, axis=1, keepdims=False), axis=1)
