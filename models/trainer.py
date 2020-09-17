@@ -66,7 +66,7 @@ def trainer(model,
                 x = (x-127.5)/127.5 
             elif scale == 'sigmoid':
                 x = x/255.
-            train_loss = model.train_step(x, opt=opt)
+            train_loss = model.train_step(x, opt=opt, is_training=True, total_iter = total_iter)
 
             # 2020. 10. 17 Update
             if train_loss is not None:

@@ -14,7 +14,6 @@ def log_normal_pdf(sample, mean, logvar):
     
 
 class BetaTCVAE(BaseVAE):
-    num_iter = 0
 
     def __init__(self,
                 latent_dim : int = None,
@@ -96,8 +95,9 @@ class BetaTCVAE(BaseVAE):
         z = self.reparameterize(mu, logvar)
         return self.decode(z, apply_sigmoid=True)
 
+
     @tf.function
-    def compute_loss(self, x: Tensor, is_training=True) -> dict:
+    def compute_loss(self, x: Tensor, is_training=True, total_iter=None) -> dict:
         mean, logvar = self.encode(x)
         z = self.reparameterize(mean, logvar)
         recons_x = self.decode(z) # not apply activate function
@@ -106,9 +106,8 @@ class BetaTCVAE(BaseVAE):
         latent_dim = self.latent_dim
         
         if is_training :
-            self.num_iter += 1
             dataset_size = self.train_data_size
-            anneal_rate = min(0 + 1 * self.num_iter / self.anneal_steps, 1)
+            anneal_rate = min(0 + 1 * total_iter / self.anneal_steps, 1)
         else :
             dataset_size = self.test_data_size
             anneal_rate = 1.
@@ -162,9 +161,9 @@ class BetaTCVAE(BaseVAE):
                 'anneal_rate' : anneal_rate}
                 
     @tf.function
-    def train_step(self, x, opt=tfk.optimizers.Adam()) -> Tensor:
+    def train_step(self, x, opt=tfk.optimizers.Adam(), is_training=True, total_iter=1) -> Tensor:
         with tf.GradientTape() as tape:
-            loss = self.compute_loss(x)
+            loss = self.compute_loss(x, is_training=is_training, total_iter=total_iter)
             total_loss = loss['total_loss']
         grad = tape.gradient(total_loss, self.trainable_variables)
         opt.apply_gradients(zip(grad, self.trainable_variables))
