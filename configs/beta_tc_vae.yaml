@@ -62,7 +62,7 @@ train_param:
 dataset_param:
   datatype: 'celeba'
   path: 'data/celeba'
-  input_shape: [128, 128]
+  input_shape: [64, 64]
   test_split: 0.2
   batch_size: 32
   shuffle: True
