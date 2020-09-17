@@ -14,6 +14,8 @@ def log_normal_pdf(sample, mean, logvar):
     
 
 class BetaTCVAE(BaseVAE):
+    num_iter = 0
+
     def __init__(self,
                 latent_dim : int = None,
                 input_shape : list = None,
@@ -25,6 +27,7 @@ class BetaTCVAE(BaseVAE):
                 loss_function_type : str = 'MSE',
                 train_data_size : int = None,
                 test_data_size : int = None,
+                anneal_steps: int = None,
                 **kwargs) -> None:
         super(BetaTCVAE, self).__init__()
 
@@ -33,6 +36,7 @@ class BetaTCVAE(BaseVAE):
         self.alpha = alpha
         self.beta = beta
         self.gamma = gamma
+        self.anneal_steps = anneal_steps
         self.loss_function_type = loss_function_type
         self.train_data_size = train_data_size
         self.test_data_size = test_data_size
@@ -100,10 +104,14 @@ class BetaTCVAE(BaseVAE):
 
         batch_size =  z.shape[0]
         latent_dim = self.latent_dim
+        
         if is_training :
+            self.num_iter += 1
             dataset_size = self.train_data_size
+            anneal_rate = min(0 + 1 * self.num_iter / self.anneal_steps, 1)
         else :
             dataset_size = self.test_data_size
+            anneal_rate = 1.
 
         # --- reconstruct loss
         if self.loss_function_type == 'MSE':
@@ -144,7 +152,7 @@ class BetaTCVAE(BaseVAE):
         KLD_loss = tf.reduce_mean(log_prod_q_z - log_p_z)
         rec_loss = tf.reduce_mean(rec_loss)
         
-        total_loss = rec_loss + self.alpha*MI_loss + self.beta * TC_loss + self.gamma * KLD_loss 
+        total_loss = rec_loss + self.alpha*MI_loss + self.beta * TC_loss + anneal_rate * self.gamma * KLD_loss 
 
         return {'total_loss' : total_loss,
                 'rec_loss' : rec_loss,
