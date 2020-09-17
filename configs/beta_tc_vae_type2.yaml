@@ -88,7 +88,7 @@ model_params:
       padding: 'same'
 
 train_param:
-  check_loss_cnt: 5
+  check_loss_cnt: 6
   epochs: 50
   save_path: 'assets/beta_tc_vae/'
   save_model_path: 'save/beta_tc_vae/'
@@ -110,5 +110,5 @@ dataset_param:
 opt_param:
   name: 'Adam'
   initial_learning_rate: 0.001
-  decay_steps: 10
+  decay_steps: 10000
   decay_rate: 0.99

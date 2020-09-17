@@ -158,12 +158,14 @@ class BetaTCVAE(BaseVAE):
                 'rec_loss' : rec_loss,
                 'MI_loss' : MI_loss,
                 'TC_loss': TC_loss,
-                'KLD_loss': KLD_loss}
+                'KLD_loss': KLD_loss,
+                'anneal_rate' : anneal_rate}
                 
     @tf.function
     def train_step(self, x, opt=tfk.optimizers.Adam()) -> Tensor:
         with tf.GradientTape() as tape:
-            loss = self.compute_loss(x)['total_loss']
-        grad = tape.gradient(loss, self.trainable_variables)
+            loss = self.compute_loss(x)
+            total_loss = loss['total_loss']
+        grad = tape.gradient(total_loss, self.trainable_variables)
         opt.apply_gradients(zip(grad, self.trainable_variables))
-        return 
+        return loss
